@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'recordingMBWEhB.ui'
+## Form generated from reading UI file 'recordingiYRwGu.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -20,10 +20,15 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(378, 331)
-        self.Group = QGroupBox(Dialog)
+        Dialog.resize(382, 329)
+        self.stackedWidget = QStackedWidget(Dialog)
+        self.stackedWidget.setObjectName(u"stackedWidget")
+        self.stackedWidget.setGeometry(QRect(10, 10, 361, 311))
+        self.recording = QWidget()
+        self.recording.setObjectName(u"recording")
+        self.Group = QGroupBox(self.recording)
         self.Group.setObjectName(u"Group")
-        self.Group.setGeometry(QRect(10, 10, 231, 311))
+        self.Group.setGeometry(QRect(0, 0, 231, 311))
         self.name = QLineEdit(self.Group)
         self.name.setObjectName(u"name")
         self.name.setGeometry(QRect(10, 40, 211, 20))
@@ -66,7 +71,7 @@ class Ui_Dialog(object):
         self.label_11.setGeometry(QRect(10, 70, 99, 13))
         self.timeFinal = QLineEdit(self.Group)
         self.timeFinal.setObjectName(u"timeFinal")
-        self.timeFinal.setGeometry(QRect(60, 220, 131, 20))
+        self.timeFinal.setGeometry(QRect(50, 220, 131, 20))
         self.timeFinal.setReadOnly(True)
         self.label_12 = QLabel(self.Group)
         self.label_12.setObjectName(u"label_12")
@@ -91,9 +96,9 @@ class Ui_Dialog(object):
         self.cancel = QPushButton(self.Group)
         self.cancel.setObjectName(u"cancel")
         self.cancel.setGeometry(QRect(120, 280, 101, 23))
-        self.whatToInclude = QGroupBox(Dialog)
+        self.whatToInclude = QGroupBox(self.recording)
         self.whatToInclude.setObjectName(u"whatToInclude")
-        self.whatToInclude.setGeometry(QRect(250, 10, 121, 161))
+        self.whatToInclude.setGeometry(QRect(240, 0, 121, 151))
         self.verticalLayout = QVBoxLayout(self.whatToInclude)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.includeClicks = QCheckBox(self.whatToInclude)
@@ -120,9 +125,9 @@ class Ui_Dialog(object):
 
         self.verticalLayout.addWidget(self.includeKeyboard)
 
-        self.hotkeys = QGroupBox(Dialog)
+        self.hotkeys = QGroupBox(self.recording)
         self.hotkeys.setObjectName(u"hotkeys")
-        self.hotkeys.setGeometry(QRect(250, 176, 121, 141))
+        self.hotkeys.setGeometry(QRect(240, 150, 121, 161))
         self.verticalLayout_2 = QVBoxLayout(self.hotkeys)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.label_13 = QLabel(self.hotkeys)
@@ -145,9 +150,52 @@ class Ui_Dialog(object):
 
         self.verticalLayout_2.addWidget(self.previewHotkey)
 
+        self.stackedWidget.addWidget(self.recording)
+        self.mouseMovement = QWidget()
+        self.mouseMovement.setObjectName(u"mouseMovement")
+        self.groupBox = QGroupBox(self.mouseMovement)
+        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setGeometry(QRect(0, 0, 361, 311))
+        self.checkBox = QCheckBox(self.groupBox)
+        self.checkBox.setObjectName(u"checkBox")
+        self.checkBox.setGeometry(QRect(170, 20, 151, 17))
+        self.checkBox.setChecked(True)
+        self.spinBox = QSpinBox(self.groupBox)
+        self.spinBox.setObjectName(u"spinBox")
+        self.spinBox.setGeometry(QRect(21, 80, 51, 22))
+        self.spinBox.setMinimum(-10000)
+        self.spinBox.setMaximum(10000)
+        self.spinBox.setSingleStep(10)
+        self.spinBox.setValue(0)
+        self.spinBox_2 = QSpinBox(self.groupBox)
+        self.spinBox_2.setObjectName(u"spinBox_2")
+        self.spinBox_2.setGeometry(QRect(81, 80, 51, 22))
+        self.spinBox_2.setMinimum(-10000)
+        self.spinBox_2.setMaximum(10000)
+        self.spinBox_2.setSingleStep(10)
+        self.spinBox_2.setValue(0)
+        self.label_3 = QLabel(self.groupBox)
+        self.label_3.setObjectName(u"label_3")
+        self.label_3.setGeometry(QRect(20, 60, 47, 13))
+        self.label_4 = QLabel(self.groupBox)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setGeometry(QRect(90, 60, 47, 13))
+        self.doubleSpinBox = QDoubleSpinBox(self.groupBox)
+        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
+        self.doubleSpinBox.setGeometry(QRect(170, 80, 62, 22))
+        self.doubleSpinBox.setMaximum(999.990000000000009)
+        self.doubleSpinBox.setSingleStep(0.250000000000000)
+        self.doubleSpinBox.setValue(0.250000000000000)
+        self.label_5 = QLabel(self.groupBox)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setGeometry(QRect(170, 50, 91, 16))
+        self.stackedWidget.addWidget(self.mouseMovement)
 
         self.retranslateUi(Dialog)
         self.cancel.clicked.connect(Dialog.reject)
+
+        self.stackedWidget.setCurrentIndex(0)
+
 
         QMetaObject.connectSlotsByName(Dialog)
     # setupUi
@@ -162,6 +210,8 @@ class Ui_Dialog(object):
         self.label_10.setText(QCoreApplication.translate("Dialog", u"Przycinanie nagrania", None))
         self.label_11.setText(QCoreApplication.translate("Dialog", u"D\u0142ugo\u015b\u0107 nagrania (s)", None))
         self.label_12.setText(QCoreApplication.translate("Dialog", u"Finalna d\u0142ugo\u015b\u0107 nagrania (s)", None))
+        self.cutTimeLeft.setSuffix(QCoreApplication.translate("Dialog", u"s", None))
+        self.cutTimeRight.setSuffix(QCoreApplication.translate("Dialog", u"s", None))
         self.label_14.setText(QCoreApplication.translate("Dialog", u"Pr\u0119dko\u015b\u0107 odtwarzania", None))
         self.cancel.setText(QCoreApplication.translate("Dialog", u"Anuluj", None))
         self.whatToInclude.setTitle(QCoreApplication.translate("Dialog", u"Co odtwarza\u0107", None))
@@ -174,5 +224,12 @@ class Ui_Dialog(object):
         self.recordingHotkey.setKeySequence(QCoreApplication.translate("Dialog", u"Ctrl+R", None))
         self.label.setText(QCoreApplication.translate("Dialog", u"Skr\u00f3t do podgl\u0105du", None))
         self.previewHotkey.setKeySequence(QCoreApplication.translate("Dialog", u"Ctrl+P", None))
+        self.groupBox.setTitle(QCoreApplication.translate("Dialog", u"Opcje ruchu myszy", None))
+        self.checkBox.setText(QCoreApplication.translate("Dialog", u"Wsp\u00f3\u0142rz\u0119dne bezwzgl\u0119dne", None))
+        self.spinBox.setPrefix("")
+        self.label_3.setText(QCoreApplication.translate("Dialog", u"x", None))
+        self.label_4.setText(QCoreApplication.translate("Dialog", u"y", None))
+        self.doubleSpinBox.setSuffix(QCoreApplication.translate("Dialog", u"s", None))
+        self.label_5.setText(QCoreApplication.translate("Dialog", u"Czas trwania ruchu", None))
     # retranslateUi
 

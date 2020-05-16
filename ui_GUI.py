@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIVwWNZn.ui'
+## Form generated from reading UI file 'GUIruHNdw.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -20,9 +20,16 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 604)
+        MainWindow.resize(792, 584)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        MainWindow.setSizePolicy(sizePolicy)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
+        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        self.centralwidget.setSizePolicy(sizePolicy)
         self.zakladki = QTabWidget(self.centralwidget)
         self.zakladki.setObjectName(u"zakladki")
         self.zakladki.setGeometry(QRect(10, 0, 781, 561))
@@ -162,6 +169,11 @@ class Ui_MainWindow(object):
         self.creatorEditorTreeView = QTreeView(self.creatorEditorGroup)
         self.creatorEditorTreeView.setObjectName(u"creatorEditorTreeView")
         self.creatorEditorTreeView.setGeometry(QRect(270, 30, 471, 411))
+        self.creatorEditorTreeView.setAlternatingRowColors(True)
+        self.creatorEditorTreeView.setTextElideMode(Qt.ElideMiddle)
+        self.creatorEditorTreeView.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.creatorEditorTreeView.setWordWrap(True)
+        self.creatorEditorTreeView.header().setDefaultSectionSize(200)
         self.testButton_2 = QPushButton(self.creatorEditorGroup)
         self.testButton_2.setObjectName(u"testButton_2")
         self.testButton_2.setGeometry(QRect(210, 370, 75, 23))
@@ -286,11 +298,8 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QRect(0, 0, 792, 21))
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
 

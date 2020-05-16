@@ -2,12 +2,15 @@ import sys
 import threading
 from copy import deepcopy
 import pickle
+import random
 from keyboard import KeyboardEvent
 import keyboard
 from configparser import ConfigParser
 import time
 from mouse import ButtonEvent, WheelEvent, MoveEvent
 import mouse
+from collections import namedtuple
+
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox, QTreeWidgetItem
 from PySide2.QtCore import QSignalBlocker, QRegularExpression
 from PySide2.QtGui import QStandardItemModel, QStandardItem
@@ -54,28 +57,47 @@ class MacroEditorItem(QStandardItem):
         self.action = action
         self.setText(text)
 
+    def __str__(self):
+        return str(self.action)
+
+
+# PlaceholderEvent = namedtuple('PlaceholderEvent', ['event_type'], defaults=['PlaceholderEvent'])
+
 
 class PlaceholderEvent:
     def __init__(self):
         self.event_type = 'PlaceholderEvent'
 
+    def __str__(self):
+        return self.event_type
+
 
 class ForEvent:
-    def __init__(self, event_list=[PlaceholderEvent()], times=1):
+    def __init__(self, event_list=None, times=1):
+        if event_list is None:
+            event_list = [MacroEditorItem(PlaceholderEvent(), 'Początek pętli')]
         self.event_type = 'ForEvent'
         self.event_list = event_list
         self.times = times
-        self.ensurePlaceholder()
+
+    def __str__(self):
+        printed_string = 'ForEvent['
+        for event in self.event_list:
+            printed_string += str(event) + ', '
+        return printed_string + ']'
 
     def ensurePlaceholder(self):
-        if not isinstance( self.event_list[0], PlaceholderEvent ):
-            self.event_list.insert(0, PlaceholderEvent())
+        if not isinstance( self.event_list[0].action[0], PlaceholderEvent ):
+            self.event_list.insert(0, MacroEditorItem(PlaceholderEvent(), 'Początek pętli'))
 
 
 class WaitEvent:
     def __init__(self, event_type, trigger ):
         self.event_type = event_type
         self.trigger = trigger
+
+    def __str__(self):
+        return self.event_type
 
 
 class MainWindow(QMainWindow):
@@ -153,7 +175,7 @@ class MainWindow(QMainWindow):
             "Czekaj na akcję myszy": WaitEvent('mouse', 0),
             "Czekaj na akcję klawiatury": WaitEvent('keyboard', 0),
             "Czekaj N sekund": WaitEvent('nseconds', 0),
-            "Wykonaj N razy": ForEvent(),
+            "Wykonaj N razy": ForEvent(),  # lambda: random.randint(0, 2000000000)),
             "Początek pętli": PlaceholderEvent()
         }
 
@@ -198,6 +220,7 @@ class MainWindow(QMainWindow):
         self.ui.creatorEditorDeleteFromActions.clicked.connect( self.creatorEditorDelete )
         self.ui.creatorEditorEdit.clicked.connect( self.creatorRecordOpenInEditor )
         self.ui.creatorEditorAddToMacro.clicked.connect( self.creatorAddActionToMacro )
+        self.ui.creatorEditorDeleteFromMacro.clicked.connect( self.creatorRemoveActionFromMacro )
 
         # settings
         self.ui.settingsDefault.clicked.connect( self.settingsDefaultConfirmation )
@@ -604,46 +627,116 @@ class MainWindow(QMainWindow):
         # print( self.ui.creatorEditorTreeView.selectedIndexes() )
         if not self.ui.creatorEditorActions.selectedItems() == []:  # if some action in the action list is selected
             item_name = self.ui.creatorEditorActions.selectedItems()[0].text(0)
+            item = None
+            if 'Przemieść kursor' == item_name:
+                item = MoveEvent(0, 0, 0)
+            elif 'Ruch kółka myszy' == item_name:
+                item = WheelEvent(1, 0)
+            elif 'Puść przycisk myszy' == item_name:
+                item = ButtonEvent(mouse.UP, mouse.LEFT, 0)
+            elif 'Przytrzymaj przycisk myszy' == item_name:
+                item = ButtonEvent(mouse.DOWN, mouse.LEFT, 0)
+            elif 'Kliknięcie' == item_name:
+                item = ButtonEvent('click', mouse.LEFT, 0)
+            elif 'Podwójne kliknięcie' == item_name:
+                item = ButtonEvent(mouse.DOUBLE, mouse.LEFT, 0)
+            elif 'Użyj skrótu klawiszowego' == item_name:
+                item = KeyboardEvent('hotkey', 0, time=0)
+            elif 'Kliknij klawisz' == item_name:
+                item = KeyboardEvent('write', 0, time=0)
+            elif 'Przytrzymaj klawisz' == item_name:
+                item = KeyboardEvent(keyboard.KEY_DOWN, 0, time=0)
+            elif 'Puść klawisz' == item_name:
+                item = KeyboardEvent(keyboard.KEY_UP, 0, time=0)
+            elif 'Wypisz tekst' == item_name:
+                item = KeyboardEvent('write', 0, time=0)
+            elif "Puść wszystkie klawisze" == item_name:
+                item = KeyboardEvent('releaseall', 0, time=0)
+            elif "Czekaj na akcję myszy" == item_name:
+                item = WaitEvent('mouse', 0)
+            elif "Czekaj na akcję klawiatury" == item_name:
+                item = WaitEvent('keyboard', 0)
+            elif "Czekaj N sekund" == item_name:
+                item = WaitEvent('nseconds', 0)
+            elif "Wykonaj N razy" == item_name:
+                item = ForEvent()  # lambda: random.randint(0, 2000000000)),
+            elif "Początek pętli" == item_name:
+                item = PlaceholderEvent()
+            else:
+                print( 'Nieznana nazwa' )
+            item = MacroEditorItem(item, item_name)
             print( 'creatorAddActionToMacro -', item_name )
             if self.ui.creatorEditorTreeView.selectedIndexes() == []:   # if no action in the macro is selected
-                item = MacroEditorItem( self.macroElementNameInterpreter[item_name], item_name )
-                self.rootNode.appendRow(item)
+                self.rootNode.appendRow( item )
+                self.macroElements.append( item )  # Dodawanie elementu do listy poleceń makra
                 if item_name == "Wykonaj N razy":
                     item_name = "Początek pętli"
-                    item.appendRow([MacroEditorItem(self.macroElementNameInterpreter[item_name], item_name), QStandardItem()])
+                    item.appendRow([MacroEditorItem(PlaceholderEvent(), item_name), QStandardItem()])
                     self.ui.creatorEditorTreeView.setExpanded( item.index(), True )
             else:
                 parent_index = self.ui.creatorEditorTreeView.selectedIndexes()[0].parent()
                 if not parent_index.isValid():    # if item is from top level of the tree
-                    item = MacroEditorItem( self.macroElementNameInterpreter[item_name], item_name )
-                    self.rootNode.insertRow( self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1, item )
-                    self.rootNode.setChild(self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1, item)
+                    print( 'invalid', parent_index )
+                    index = self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1
+                    self.rootNode.insertRow( index, item )  # z jakiegoś powodu zamiast rzeczy w zmiennej item, wstawia QStandardItem()
+                    self.rootNode.setChild( index, item )   # dlatego w tej linijce to nadpisujemy moim itemem i działa
+                    self.macroElements.insert( index, item )  # Dodawanie elementu do listy poleceń makra
                     if item_name == "Wykonaj N razy":
                         item_name = "Początek pętli"
-                        item.appendRow([MacroEditorItem(self.macroElementNameInterpreter[item_name], item_name), QStandardItem()])
+                        item.appendRow([MacroEditorItem(PlaceholderEvent(), item_name), QStandardItem()])
                         self.ui.creatorEditorTreeView.setExpanded( item.index(), True )
-                else:
-                    item = MacroEditorItem(self.macroElementNameInterpreter[item_name], item_name)
-                    self.treeModel.itemFromIndex(parent_index).insertRow( self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1, item )
-                    self.treeModel.itemFromIndex(parent_index).setChild(self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1, item)
+                else:  # if item in not from top level of the tree
+                    print( 'valid', self.treeModel.itemFromIndex(parent_index).text() )
+                    item_index = self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1
+                    self.treeModel.itemFromIndex( parent_index ).insertRow( item_index, item )
+                    self.treeModel.itemFromIndex( parent_index ).setChild( item_index, item )
+                    self.treeModel.itemFromIndex( parent_index ).action.event_list.insert( item_index, item )  # Dodawanie elementu do listy poleceń makra
+                    print('valid', self.treeModel.itemFromIndex( parent_index ).action.event_list )
+                    print( self.macroElements[0].action.event_list )
+                    print( self.treeModel.itemFromIndex( parent_index ).action.event_list )
                     if item_name == "Wykonaj N razy":
                         item_name = "Początek pętli"
-                        item.appendRow([MacroEditorItem(self.macroElementNameInterpreter[item_name], item_name), QStandardItem()])
+                        item.appendRow([MacroEditorItem(PlaceholderEvent(), item_name), QStandardItem()])
                         self.ui.creatorEditorTreeView.setExpanded( item.index(), True )
 
-                # self.treeModel.itemFromIndex(index).insertRow( 0, MacroEditorItem(self.macroElementNameInterpreter[item_name], item_name))
-
-                # good for ForEvent!
-                # item_name = self.ui.creatorEditorActions.selectedItems()[0].text(0)
-                # index = self.ui.creatorEditorTreeView.selectedIndexes()[0]
-                # self.treeModel.itemFromIndex(index).appendRow( MacroEditorItem( self.macroElementNameInterpreter[item_name], item_name ))
+    def creatorRemoveActionFromMacro(self):
+        if not self.ui.creatorEditorTreeView.selectedIndexes() == []:  # if some action in the macro is selected
+            items = self.ui.creatorEditorTreeView.selectedIndexes()
+            print( 'creatorRemoveActionFromMacro -', items )
+            row = items[0].row()
+            parent_index = items[0].parent()
+            if not parent_index.isValid():  # if item is from top level of the tree
+                print( 'index invalid!' )
+                del self.macroElements[row]
+                self.rootNode.removeRow( row )
+            else:  # if item in not from top level of the tree
+                print('row =', row)
+                print( self.treeModel.itemFromIndex(parent_index).action.event_list )
+                print( self.treeModel.itemFromIndex(parent_index).action.event_list[row] )
+                del self.treeModel.itemFromIndex(parent_index).action.event_list[row]
+                self.treeModel.itemFromIndex( parent_index ).removeRow(row)
 
     def inspectThis(self):
+        # print( self.macroElements )
         indexes = self.ui.creatorEditorTreeView.selectedIndexes()
-        print( 'indexes', indexes )
-        print( 'data 0:', indexes[0].data() )
-        print( self.treeModel.itemFromIndex( indexes[0] ).action )
-        print( 'data 1:', indexes[1].data() )
+        print( self.treeModel.itemFromIndex(indexes[0]) )
+        self.showMacroStructure()
+        # print( 'indexes', indexes )
+        # print( 'data 0:', indexes[0].data() )
+        # print( self.treeModel.itemFromIndex( indexes[0].parent() ).action.event_list )
+
+        # list = self.treeModel.itemFromIndex( indexes[0].parent() ).action.event_list
+        # print( '[ ', end='' )
+        # for element in list:
+        #     print( type(element.action).__name__, ', ', sep='', end='' )
+        # print( ' ]' )
+        # print( 'data 1:', indexes[1].data() )
+
+    def showMacroStructure(self):
+        string = '['
+        for element in self.macroElements:
+            string += str(element) + ', '
+        print(string + ']')
 
     def creatorEditorTreeViewClear(self):
         self.treeModel.clear()
