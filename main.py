@@ -18,8 +18,9 @@ from ui_GUI import Ui_MainWindow
 from recording_GUI import Ui_Dialog
 
 
-class Recording:
+class RecordingEvent:
     def __init__(self, name='', events=[], speed_factor=1.0, cut_left=0, cut_right=0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
+        self.event_type = 'RecordingEvent'
         self.name = name
         self.events = events
         self.speed_factor = speed_factor
@@ -50,7 +51,30 @@ class Recording:
                 self.events = edited_events
 
 
-class MacroEditorItem(QStandardItem):
+class MoveEventV2:
+    def __init__(self, x, y, play_at, duration=0, absolute=True ):
+        self.event_type = 'MoveEvent'
+        self.x = x
+        self.y = y
+        self.time = play_at
+        self.duration = duration
+        self.absolute = absolute
+
+    def __str__(self):
+        return 'MoveEventV2(x=' + str(self.x) + ', y=' + str(self.y) + ', time=' + str(self.time) + ', duration=' + str(self.duration) + ', absolute=' + str(self.absolute) + ')'
+
+
+class ButtonEventV2:
+    def __init__(self, event_type, button, play_at ):
+        self.event_type = event_type
+        self.button = button
+        self.time = play_at
+
+    def __str__(self):
+        return 'ButtonEventV2(event_type=' + str(self.event_type) + ', button=' + str(self.button) + ', time=' + str(self.time) + ')'
+
+
+class MacroEditorItem(QStandardItem):  # MEI
     def __init__(self, action, text='' ):
         super().__init__(text=text)
 
@@ -58,7 +82,7 @@ class MacroEditorItem(QStandardItem):
         self.setText(text)
 
     def __str__(self):
-        return str(self.action)
+        return 'MEI(' + str(self.action) + ')'
 
 
 # PlaceholderEvent = namedtuple('PlaceholderEvent', ['event_type'], defaults=['PlaceholderEvent'])
@@ -159,27 +183,29 @@ class MainWindow(QMainWindow):
             'PlaceholderEvent': "Początek pętli"
         }
 
-        self.macroElementNameInterpreter = {
-            'Przemieść kursor': MoveEvent(0, 0, 0),
-            'Ruch kółka myszy': WheelEvent(1, 0),
-            'Puść przycisk myszy': ButtonEvent(mouse.UP, mouse.LEFT, 0),
-            'Przytrzymaj przycisk myszy': ButtonEvent(mouse.DOWN, mouse.LEFT, 0),
-            'Kliknięcie': ButtonEvent('click', mouse.LEFT, 0),
-            'Podwójne kliknięcie': ButtonEvent(mouse.DOUBLE, mouse.LEFT, 0),
-            'Użyj skrótu klawiszowego': KeyboardEvent('hotkey', 0, time=0),
-            'Kliknij klawisz': KeyboardEvent('write', 0, time=0),
-            'Przytrzymaj klawisz': KeyboardEvent(keyboard.KEY_DOWN, 0, time=0),
-            'Puść klawisz': KeyboardEvent(keyboard.KEY_UP, 0, time=0),
-            'Wypisz tekst': KeyboardEvent('write', 0, time=0),
-            "Puść wszystkie klawisze": KeyboardEvent('releaseall', 0, time=0),
-            "Czekaj na akcję myszy": WaitEvent('mouse', 0),
-            "Czekaj na akcję klawiatury": WaitEvent('keyboard', 0),
-            "Czekaj N sekund": WaitEvent('nseconds', 0),
-            "Wykonaj N razy": ForEvent(),  # lambda: random.randint(0, 2000000000)),
-            "Początek pętli": PlaceholderEvent()
-        }
+
+        # self.macroElementNameInterpreter = {
+        #     'Przemieść kursor': MoveEvent(0, 0, 0),
+        #     'Ruch kółka myszy': WheelEvent(1, 0),
+        #     'Puść przycisk myszy': ButtonEvent(mouse.UP, mouse.LEFT, 0),
+        #     'Przytrzymaj przycisk myszy': ButtonEvent(mouse.DOWN, mouse.LEFT, 0),
+        #     'Kliknięcie': ButtonEvent('click', mouse.LEFT, 0),
+        #     'Podwójne kliknięcie': ButtonEvent(mouse.DOUBLE, mouse.LEFT, 0),
+        #     'Użyj skrótu klawiszowego': KeyboardEvent('hotkey', 0, time=0),
+        #     'Kliknij klawisz': KeyboardEvent('write', 0, time=0),
+        #     'Przytrzymaj klawisz': KeyboardEvent(keyboard.KEY_DOWN, 0, time=0),
+        #     'Puść klawisz': KeyboardEvent(keyboard.KEY_UP, 0, time=0),
+        #     'Wypisz tekst': KeyboardEvent('write', 0, time=0),
+        #     "Puść wszystkie klawisze": KeyboardEvent('releaseall', 0, time=0),
+        #     "Czekaj na akcję myszy": WaitEvent('mouse', 0),
+        #     "Czekaj na akcję klawiatury": WaitEvent('keyboard', 0),
+        #     "Czekaj N sekund": WaitEvent('nseconds', 0),
+        #     "Wykonaj N razy": ForEvent(),  # lambda: random.randint(0, 2000000000)),
+        #     "Początek pętli": PlaceholderEvent()
+        # }
 
         self.macroElements = []
+        self.currentlyEditedItem = None
         self.treeModel = QStandardItemModel()
         self.rootNode = self.treeModel.invisibleRootItem()
         self.treeModel.setColumnCount(2)
@@ -210,17 +236,22 @@ class MainWindow(QMainWindow):
         self.recordDialog.start.clicked.connect(self.creatorRecordToggle)
         self.recordDialog.preview.clicked.connect( self.creatorRecordPreviewToggle )
         self.recordDialog.addToActions.clicked.connect( self.creatorRecordAddToActions )
+        self.recordDialog.save.clicked.connect( self.saveEditedItem )
 
+        self.ui.creatorEditorDeleteFromActions.clicked.connect(self.creatorEditorDelete)
+        # self.ui.creatorEditorEdit.clicked.connect(self.creatorRecordOpenInEditor)  # DO POłĄCZENIA Z self.creatorSelectEditorPageBySelectedAction !
+        self.ui.creatorEditorAddToMacro.clicked.connect(self.creatorAddActionToMacro)
+        self.ui.creatorEditorDeleteFromMacro.clicked.connect(self.creatorRemoveActionFromMacro)
+        self.ui.creatorEditorEdit.clicked.connect( self.creatorOpenSelectedInEditor )
+
+        # Test functions
         self.ui.testSaveButton.clicked.connect( self.pickleRecordings )
         self.ui.testLoadButton.clicked.connect( self.unpickleRecordings )
         self.ui.testButton.clicked.connect( self.creatorEditorTreeViewUpdate )
         self.ui.testButton_2.clicked.connect( self.creatorEditorTreeViewClear )
         self.ui.WhatIsThisButton.clicked.connect( self.inspectThis )
 
-        self.ui.creatorEditorDeleteFromActions.clicked.connect( self.creatorEditorDelete )
-        self.ui.creatorEditorEdit.clicked.connect( self.creatorRecordOpenInEditor )
-        self.ui.creatorEditorAddToMacro.clicked.connect( self.creatorAddActionToMacro )
-        self.ui.creatorEditorDeleteFromMacro.clicked.connect( self.creatorRemoveActionFromMacro )
+
 
         # settings
         self.ui.settingsDefault.clicked.connect( self.settingsDefaultConfirmation )
@@ -494,7 +525,7 @@ class MainWindow(QMainWindow):
 
     def creatorRecordOverwriteConfirmed(self, i):
         if i.text() == 'OK':
-            self.recordsDict[self.recordDialog.name.text()] = Recording( name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recorded, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked() )
+            self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recorded, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
             print("Overwritten")
 
     def creatorRecordAddToActions(self):
@@ -504,10 +535,147 @@ class MainWindow(QMainWindow):
                 self.creatorRecordOverwriteConfirmation()
             else:
                 QTreeWidgetItem( self.ui.creatorEditorActions.topLevelItem(3), [self.recordDialog.name.text()] )
-                self.recordsDict[self.recordDialog.name.text()] = Recording( name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recorded, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked() )
+                self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recorded, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
 
-    def creatorRecordOpenInEditor(self):
-        print( self.ui.creatorEditorActions.selectedItems()[0].text(0) )
+    def creatorOpenSelectedInEditor(self):
+        indexes = self.ui.creatorEditorTreeView.selectedIndexes()
+        if not indexes == []:
+            self.currentlyEditedItem = self.treeModel.itemFromIndex(self.ui.creatorEditorTreeView.selectedIndexes()[0])
+            event = self.treeModel.itemFromIndex(indexes[0]).action
+
+            event_type = type(event).__name__
+            # print( event_type )
+
+            if event_type in ['MoveEvent', 'MoveEventV2']:
+                print(event_type, 'id=0')
+                self.creatorSelectEditorPageByID(0)
+                print('Edition implemented!')
+                self.openInEditorMouseMovement()
+
+            elif event_type in ['ButtonEvent', 'ButtonEventV2']:
+                print(event_type, 'id=1')
+                self.creatorSelectEditorPageByID(1)
+                print('Edition implemented')
+                self.openInEditorMouseButton()
+
+            elif event_type == 'WheelEvent':
+                self.creatorSelectEditorPageByID(2)
+                print(event_type, 'id=2')
+                print('Edition not implemented yet')
+
+            elif event_type == 'KeyboardEvent':
+                if event.event_type == 'releaseall':
+                    print(event.event_type, 'id=None')
+                    print('Edition not implemented yet')
+
+                elif event.event_type == 'up' or event.event_type == 'down' or event.event_type == 'click':
+                    print(event.event_type, 'id=3')
+                    self.creatorSelectEditorPageByID(3)
+                    print('Edition not implemented yet')
+
+                elif event.event_type == 'hotkey':
+                    print(event.event_type, 'id=4')
+                    self.creatorSelectEditorPageByID(4)
+                    print('Edition not implemented yet')
+
+                elif event.event_type == 'write':
+                    print(event.event_type, 'id=5')
+                    self.creatorSelectEditorPageByID(5)
+                    print('Edition not implemented yet')
+
+                else:
+                    print('Nieznany typ KeyboardEventu!', event.event_type)
+
+            elif event_type == 'WaitEvent':
+                if event.event_type == 'mouse':
+                    print(event.event_type, 'id=6')
+                    self.creatorSelectEditorPageByID(6)
+                    print('Edition not implemented yet')
+
+                elif event.event_type == 'keyboard':
+                    print(event.event_type, 'id=7')
+                    self.creatorSelectEditorPageByID(7)
+                    print('Edition not implemented yet')
+
+                elif event.event_type == 'nseconds':
+                    print(event.event_type, 'id=8')
+                    self.creatorSelectEditorPageByID(8)
+                    print('Edition not implemented yet')
+
+                else:
+                    print('Nieznany typ WaitEventu', event.event_type)
+
+            elif event_type == 'ForEvent':
+                print(event_type, 'id=9')
+                self.creatorSelectEditorPageByID(9)
+                print('Edition not implemented yet')
+
+            elif event_type == 'RecordingEvent':
+                print(event_type, 'id=10')
+                self.creatorSelectEditorPageByID(10)
+                print( 'Implemented!' )
+                self.openInEditorRecording()
+
+            elif event_type == 'PlaceholderEvent':
+                print(event_type, 'id=None')
+
+            else:
+                print('W ogóle nieznany typ eventu!', event_type)
+
+    def saveEditedItem(self):
+
+        if self.currentlyEditedItem is not None:
+            page = self.recordDialog.pages.currentIndex()
+            if page == 0:  # mouseMovement
+                print(page, 'id=0')
+                print('Saving implemented!')
+                self.editorSaveMouseMovement()
+
+            elif page == 1:  # mouseButton
+                print(page, 'id=1')
+                print('Saving implemented!')
+                self.editorSaveMouseButton()
+
+            elif page == 2:  # mouseWheel
+                print(page, 'id=2')
+                print('Saving not implemented yet')
+
+            elif page == 3:  # keyboardButton
+                print(page, 'id=3')
+                print('Saving not implemented yet')
+
+            elif page == 4:  # keyboardHotkey
+                print(page, 'id=4')
+                print('Saving not implemented yet')
+
+            elif page == 5:  # keyboardWrite
+                print(page, 'id=5')
+                print('Saving not implemented yet')
+
+            elif page == 6:  # waitMouse
+                print(page, 'id=6')
+                print('Saving not implemented yet')
+
+            elif page == 7:  # waitKeyboard
+                print(page, 'id=7')
+                print('Saving not implemented yet')
+
+            elif page == 8:  # wait N seconds
+                print(page, 'id=8')
+                print('Saving not implemented yet')
+
+            elif page == 9:  # forLoop
+                print(page, 'id=9')
+                print('Saving not implemented yet')
+
+            elif page == 10:  # recording
+                print(page, 'id=10')
+                print('Saving not implemented yet')
+            else:
+                print('Nieznana strona! id =', page)
+
+    def openInEditorRecording(self):
+        # print( self.ui.creatorEditorActions.selectedItems()[0].text(0) )
         selected = self.recordsDict[self.ui.creatorEditorActions.selectedItems()[0].text(0)]
         self.recordDialog.name.setText( selected.name )
         self.recorded = selected.events
@@ -520,6 +688,108 @@ class MainWindow(QMainWindow):
         self.recordDialog.includeKeyboard.setChecked( selected.include_keyboard )
 
         self.creatorRecordUpdateTimeAndCuts()
+
+    def openInEditorMouseMovement(self):
+        print( self.currentlyEditedItem )
+        if isinstance( self.currentlyEditedItem, MoveEvent ):
+            print( 'MoveEvent; Assuming absolute = true & exchanging for MoveEventV2' )
+            self.treeModel.itemFromIndex(self.ui.creatorEditorTreeView.selectedIndexes()[0]).action = MoveEventV2( self.currentlyEditedItem.x, self.currentlyEditedItem.y, self.currentlyEditedItem.time, duration=True, absolute=True)
+            # print(self.treeModel.itemFromIndex(self.ui.creatorEditorTreeView.selectedIndexes()[0]).action)
+            # print( self.macroElements[0].action )
+        self.recordDialog.movementAbsolute.setChecked( self.currentlyEditedItem.action.absolute )
+        self.recordDialog.movementDuration.setValue( self.currentlyEditedItem.action.duration )
+        self.recordDialog.movementX.setValue( self.currentlyEditedItem.action.x )
+        self.recordDialog.movementY.setValue( self.currentlyEditedItem.action.y )
+        # self.recordDialog.movementAbsolute.setChecked()
+
+    def editorSaveMouseMovement(self):
+        text = 'Przemieść kursor '
+        self.currentlyEditedItem.action.absolute = self.recordDialog.movementAbsolute.isChecked()
+        self.currentlyEditedItem.action.duration = self.recordDialog.movementDuration.value()
+        self.currentlyEditedItem.action.x = self.recordDialog.movementX.value()
+        self.currentlyEditedItem.action.y = self.recordDialog.movementY.value()
+        print( 'saved', self.currentlyEditedItem, '!' )
+        if self.currentlyEditedItem.action.absolute:
+            text += 'do '
+        else:
+            text += 'o '
+        text += 'x=' + str(self.currentlyEditedItem.action.x) + ', y=' + str(self.currentlyEditedItem.action.y)
+        self.currentlyEditedItem.text = text
+        self.currentlyEditedItem.setText( text )
+        # print( 'currently edited item:', self.currentlyEditedItem )
+        # print( 'macroElements:', self.macroElements[0].action )
+        # print( 'action from Qtreeview:', self.treeModel.itemFromIndex(self.ui.creatorEditorTreeView.selectedIndexes()[0]).action )
+
+    def openInEditorMouseButton(self):
+        print( self.currentlyEditedItem )
+
+        action = self.currentlyEditedItem.action
+        print( action )
+        if action.event_type == 'click':
+            self.recordDialog.typeButtonClick.setChecked(True)
+        elif action.event_type == 'double':
+            self.recordDialog.typeButtonDoubleClick.setChecked(True)
+        elif action.event_type == 'down':
+            self.recordDialog.typeButtonHold.setChecked(True)
+        elif action.event_type == 'up':
+            self.recordDialog.typeButtonRelease.setChecked(True)
+
+        if action.button == 'left':
+            self.recordDialog.mouseButtonSelection.setCurrentIndex(0)
+
+        elif action.button == 'right':
+            self.recordDialog.mouseButtonSelection.setCurrentIndex(1)
+
+        elif action.button == 'middle':
+            self.recordDialog.mouseButtonSelection.setCurrentIndex(2)
+
+    def editorSaveMouseButton(self):
+        print( self.currentlyEditedItem )
+
+        action = self.currentlyEditedItem.action
+        button = self.recordDialog.mouseButtonSelection.currentText()
+        should_i_continue = True
+        new_action = None
+        text = ''
+
+        if self.recordDialog.typeButtonClick.isChecked():
+            self.currentlyEditedItem.action.event_type = 'click'
+            text = 'Kliknij '
+        elif self.recordDialog.typeButtonDoubleClick.isChecked():
+            self.currentlyEditedItem.action.event_type = 'double'
+            text = 'Kliknij podwójnie '
+        elif self.recordDialog.typeButtonHold.isChecked():
+            self.currentlyEditedItem.action.event_type = 'down'
+            text = 'Przytrzymaj '
+        elif self.recordDialog.typeButtonRelease.isChecked():
+            self.currentlyEditedItem.action.event_type = 'up'
+            text = 'Puść '
+
+        else:
+            should_i_continue = False
+            print( 'Error: No radio selected?' )
+
+        if button == 'Lewy':
+            self.currentlyEditedItem.action.button = 'left'
+            text += 'lewy przycisk myszy'
+
+        elif button == 'Prawy':
+            self.currentlyEditedItem.action.button = 'right'
+            text += 'prawy przycisk myszy'
+
+        elif button == 'Środkowy':
+            self.currentlyEditedItem.action.button = 'middle'
+            text += 'środkowy przycisk myszy'
+
+        print( self.currentlyEditedItem )
+        self.currentlyEditedItem.text = text
+        self.currentlyEditedItem.setText( text )
+        print( self.macroElements[0] )
+
+
+
+
+
 
     def creatorEditorDelete(self):
         print( 'creatorEditorDelete' )
@@ -624,26 +894,26 @@ class MainWindow(QMainWindow):
                 self.rootNode.appendRow(MacroEditorItem(event, self.macroElementNametags[type(event).__name__ + event.event_type]))
 
     def creatorAddActionToMacro(self):
-        # print( self.ui.creatorEditorTreeView.selectedIndexes() )
         if not self.ui.creatorEditorActions.selectedItems() == []:  # if some action in the action list is selected
             item_name = self.ui.creatorEditorActions.selectedItems()[0].text(0)
             item = None
+            is_name_known = True
             if 'Przemieść kursor' == item_name:
-                item = MoveEvent(0, 0, 0)
+                item = MoveEventV2(0, 0, 0)
             elif 'Ruch kółka myszy' == item_name:
                 item = WheelEvent(1, 0)
             elif 'Puść przycisk myszy' == item_name:
-                item = ButtonEvent(mouse.UP, mouse.LEFT, 0)
+                item = ButtonEventV2(mouse.UP, mouse.LEFT, 0)
             elif 'Przytrzymaj przycisk myszy' == item_name:
-                item = ButtonEvent(mouse.DOWN, mouse.LEFT, 0)
+                item = ButtonEventV2(mouse.DOWN, mouse.LEFT, 0)
             elif 'Kliknięcie' == item_name:
-                item = ButtonEvent('click', mouse.LEFT, 0)
+                item = ButtonEventV2('click', mouse.LEFT, 0)
             elif 'Podwójne kliknięcie' == item_name:
-                item = ButtonEvent(mouse.DOUBLE, mouse.LEFT, 0)
+                item = ButtonEventV2(mouse.DOUBLE, mouse.LEFT, 0)
             elif 'Użyj skrótu klawiszowego' == item_name:
                 item = KeyboardEvent('hotkey', 0, time=0)
             elif 'Kliknij klawisz' == item_name:
-                item = KeyboardEvent('write', 0, time=0)
+                item = KeyboardEvent('click', 0, time=0)
             elif 'Przytrzymaj klawisz' == item_name:
                 item = KeyboardEvent(keyboard.KEY_DOWN, 0, time=0)
             elif 'Puść klawisz' == item_name:
@@ -662,18 +932,22 @@ class MainWindow(QMainWindow):
                 item = ForEvent()  # lambda: random.randint(0, 2000000000)),
             elif "Początek pętli" == item_name:
                 item = PlaceholderEvent()
+            elif item_name in self.recordsDict.keys():
+                print( item_name, self.recordsDict[item_name] )
+                item = self.recordsDict[item_name]
             else:
+                is_name_known = False
                 print( 'Nieznana nazwa' )
             item = MacroEditorItem(item, item_name)
             print( 'creatorAddActionToMacro -', item_name )
-            if self.ui.creatorEditorTreeView.selectedIndexes() == []:   # if no action in the macro is selected
+            if self.ui.creatorEditorTreeView.selectedIndexes() == [] and is_name_known:   # if no action in the macro is selected
                 self.rootNode.appendRow( item )
                 self.macroElements.append( item )  # Dodawanie elementu do listy poleceń makra
                 if item_name == "Wykonaj N razy":
                     item_name = "Początek pętli"
                     item.appendRow([MacroEditorItem(PlaceholderEvent(), item_name), QStandardItem()])
                     self.ui.creatorEditorTreeView.setExpanded( item.index(), True )
-            else:
+            elif is_name_known:
                 parent_index = self.ui.creatorEditorTreeView.selectedIndexes()[0].parent()
                 if not parent_index.isValid():    # if item is from top level of the tree
                     print( 'invalid', parent_index )
@@ -692,7 +966,7 @@ class MainWindow(QMainWindow):
                     self.treeModel.itemFromIndex( parent_index ).setChild( item_index, item )
                     self.treeModel.itemFromIndex( parent_index ).action.event_list.insert( item_index, item )  # Dodawanie elementu do listy poleceń makra
                     print('valid', self.treeModel.itemFromIndex( parent_index ).action.event_list )
-                    print( self.macroElements[0].action.event_list )
+                    # print( self.macroElements[0].action.event_list )
                     print( self.treeModel.itemFromIndex( parent_index ).action.event_list )
                     if item_name == "Wykonaj N razy":
                         item_name = "Początek pętli"
@@ -711,10 +985,13 @@ class MainWindow(QMainWindow):
                 self.rootNode.removeRow( row )
             else:  # if item in not from top level of the tree
                 print('row =', row)
-                print( self.treeModel.itemFromIndex(parent_index).action.event_list )
-                print( self.treeModel.itemFromIndex(parent_index).action.event_list[row] )
-                del self.treeModel.itemFromIndex(parent_index).action.event_list[row]
+                print( self.treeModel.itemFromIndex( parent_index ).action.event_list )
+                print( self.treeModel.itemFromIndex( parent_index ).action.event_list[row] )
+                del self.treeModel.itemFromIndex( parent_index ).action.event_list[row]
                 self.treeModel.itemFromIndex( parent_index ).removeRow(row)
+
+    def creatorSelectEditorPageByID(self, page_id):
+        self.recordDialog.pages.setCurrentIndex( page_id )
 
     def inspectThis(self):
         # print( self.macroElements )
@@ -781,8 +1058,10 @@ class MainWindow(QMainWindow):
                     keyboard.release(key)
                 elif event.event_type == 'write':
                     keyboard.write(event.scan_code)  # do testu musi być nadpisany tekstem!
+                elif event.event_type == 'click':
+                    keyboard.press_and_release(key)
                 elif event.event_type == 'hotkey':
-                    keyboard.send(event.scan_code)   # do testu
+                    keyboard.send(key)   # do testu
                 elif event.event_type == 'releaseall':
                     keyboard.stash_state()           # do testu
                 else:

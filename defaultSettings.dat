@@ -1,12 +1,12 @@
 [autoclicker]
-godziny = 0
-minuty = 0
-sekundy = 0
-milisekundy = 100
-whichbutton = 0
-skrot = Ctrl+Q
-clickuntilstopped = False
-clickntimes = True
+hours = 1
+minutes = 1
+seconds = 1
+miliseconds = 100
+whichbutton = 2
+hotkey = Ctrl+Q
+clickuntilstopped = True
+clickntimes = False
 clickntimesn = 5
 
 [test]
