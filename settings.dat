@@ -1,13 +1,13 @@
 [autoclicker]
-hours = 1
-minutes = 1
-seconds = 1
-miliseconds = 100
-whichbutton = 2
+hours = 0
+minutes = 0
+seconds = 0
+miliseconds = 10
+whichbutton = 0
 hotkey = Ctrl+Q
 clickuntilstopped = True
 clickntimes = False
-clickntimesn = 5
+clickntimesn = 1
 
 [test]
 abc = efg

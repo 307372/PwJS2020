@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIruHNdw.ui'
+## Form generated from reading UI file 'GUIHlUkhF.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -180,6 +180,12 @@ class Ui_MainWindow(object):
         self.WhatIsThisButton = QPushButton(self.creatorEditorGroup)
         self.WhatIsThisButton.setObjectName(u"WhatIsThisButton")
         self.WhatIsThisButton.setGeometry(QRect(210, 400, 75, 23))
+        self.previewButton = QPushButton(self.creatorEditorGroup)
+        self.previewButton.setObjectName(u"previewButton")
+        self.previewButton.setGeometry(QRect(550, 480, 75, 23))
+        self.testButton_3 = QPushButton(self.creatorEditorGroup)
+        self.testButton_3.setObjectName(u"testButton_3")
+        self.testButton_3.setGeometry(QRect(210, 430, 75, 23))
         self.creatorEditorDeleteFromMacro.raise_()
         self.creatorEditorActions.raise_()
         self.creatorEditorAddToMacro.raise_()
@@ -199,6 +205,8 @@ class Ui_MainWindow(object):
         self.testButton.raise_()
         self.testButton_2.raise_()
         self.WhatIsThisButton.raise_()
+        self.previewButton.raise_()
+        self.testButton_3.raise_()
         self.zakladki.addTab(self.kreator, "")
         self.AC_Group = QWidget()
         self.AC_Group.setObjectName(u"AC_Group")
@@ -302,6 +310,8 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
 
         self.retranslateUi(MainWindow)
+        self.creatorEditorActions.itemDoubleClicked.connect(self.creatorEditorAddToMacro.click)
+        self.creatorEditorTreeView.clicked.connect(self.creatorEditorEdit.click)
 
         self.zakladki.setCurrentIndex(2)
 
@@ -406,8 +416,10 @@ class Ui_MainWindow(object):
         self.creatorEditorEdit.setText(QCoreApplication.translate("MainWindow", u"Edytuj", None))
         self.testLoadButton.setText(QCoreApplication.translate("MainWindow", u"Wczytaj", None))
         self.testButton.setText(QCoreApplication.translate("MainWindow", u"Update", None))
-        self.testButton_2.setText(QCoreApplication.translate("MainWindow", u"Clear", None))
+        self.testButton_2.setText(QCoreApplication.translate("MainWindow", u"timeTest", None))
         self.WhatIsThisButton.setText(QCoreApplication.translate("MainWindow", u"Co to jest?", None))
+        self.previewButton.setText(QCoreApplication.translate("MainWindow", u"Odtw\u00f3rz", None))
+        self.testButton_3.setText(QCoreApplication.translate("MainWindow", u"SelectionTest", None))
         self.zakladki.setTabText(self.zakladki.indexOf(self.kreator), QCoreApplication.translate("MainWindow", u"Kreator", None))
         self.AC_Time.setTitle(QCoreApplication.translate("MainWindow", u"Odst\u0119p czasowy mi\u0119dzy klikni\u0119ciami", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Milisekundy", None))

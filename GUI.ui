@@ -564,7 +564,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Clear</string>
+        <string>timeTest</string>
        </property>
       </widget>
       <widget class="QPushButton" name="WhatIsThisButton">
@@ -578,6 +578,32 @@
        </property>
        <property name="text">
         <string>Co to jest?</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="previewButton">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>480</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Odtwórz</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="testButton_3">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>430</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>SelectionTest</string>
        </property>
       </widget>
       <zorder>creatorEditorDeleteFromMacro</zorder>
@@ -599,6 +625,8 @@
       <zorder>testButton</zorder>
       <zorder>testButton_2</zorder>
       <zorder>WhatIsThisButton</zorder>
+      <zorder>previewButton</zorder>
+      <zorder>testButton_3</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="AC_Group">
@@ -980,5 +1008,38 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>creatorEditorActions</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>creatorEditorAddToMacro</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>144</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>518</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>creatorEditorTreeView</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>creatorEditorEdit</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>517</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>419</x>
+     <y>545</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
