@@ -190,7 +190,7 @@ class OpeningAndSaving:
         self.recordDialog.waitKeyboardSuppressor.setChecked( self.currentlyEditedItem.action.suppress )
 
     def openInEditorWaitNSeconds(self):
-        self.recordDialog.waitNSecondsTime.setValue( self.currentlyEditedItem.action.time )
+        self.recordDialog.waitNSecondsTime.setValue( self.currentlyEditedItem.action.wait_time )
 
     def openInEditorForLoop(self):
         self.recordDialog.forLoopTimes.setValue( self.currentlyEditedItem.action.times )
@@ -286,7 +286,6 @@ class OpeningAndSaving:
         text += 'x=' + str(self.currentlyEditedItem.action.x) + ', y=' + str(self.currentlyEditedItem.action.y)
         if self.recordDialog.movementDuration.value() > 0:
             text += ' w ' + str(self.recordDialog.movementDuration.value()) + 's'
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
 
     def editorSaveMouseButton(self):
@@ -324,7 +323,6 @@ class OpeningAndSaving:
             text += 'środkowy przycisk myszy'
 
         print( self.currentlyEditedItem )
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
         print( self.macroElements[0] )
 
@@ -332,7 +330,6 @@ class OpeningAndSaving:
         print( 'pre:', self.currentlyEditedItem )
         self.currentlyEditedItem.action = WheelEventV2( self.recordDialog.mouseWheelDelta.value(), 0 )
         text = 'Ruch kółka myszy o ' + str(self.recordDialog.mouseWheelDelta.value())
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
         print( 'post:', self.currentlyEditedItem )
 
@@ -354,25 +351,21 @@ class OpeningAndSaving:
             self.currentlyEditedItem.action.scan_code = None
             self.currentlyEditedItem.action.name = keyboard.normalize_name(self.recordDialog.keyboardButtonSelection.text())
             text += self.recordDialog.keyboardButtonSelection.text()
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
 
     def editorSaveKeyboardHotkey(self):
         self.currentlyEditedItem.action.name = self.recordDialog.keyboardHotkeySelection.keySequence().toString()
         text = "Użyj skrótu klawiszowego " + self.recordDialog.keyboardHotkeySelection.keySequence().toString()
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
         print(self.currentlyEditedItem.action.name)
         print(self.currentlyEditedItem.action)
 
     def editorSaveKeyboardWrite(self):
-        self.currentlyEditedItem.action.name = self.recordDialog.keyboardWriteTextfield.toPlainText()
+        self.currentlyEditedItem.action.scan_code = self.recordDialog.keyboardWriteTextfield.toPlainText()
         if self.currentlyEditedItem.action.name != '':
-            self.currentlyEditedItem.text = 'Wypisz tekst (wpisany)'
-            self.currentlyEditedItem.setText( self.currentlyEditedItem.text )
+            self.currentlyEditedItem.setText( 'Wypisz tekst (wpisany)' )
         else:
-            self.currentlyEditedItem.text = 'Wypisz tekst'
-            self.currentlyEditedItem.setText( self.currentlyEditedItem.text )
+            self.currentlyEditedItem.setText( 'Wypisz tekst' )
 
     def editorSaveWaitMouse(self):
         event_text = self.recordDialog.typeOfMouseAction.currentText()
@@ -403,7 +396,6 @@ class OpeningAndSaving:
         else:
             print( 'Nieznany tekst:', button_text )
 
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
 
             # self.currentlyEditedItem.action
@@ -414,19 +406,16 @@ class OpeningAndSaving:
         text = 'Czekaj na wciśnięcie ' + str( self.currentlyEditedItem.action.target_button )
         if self.currentlyEditedItem.action.suppress:
             text += ' (wyciszone)'
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
 
     def editorSaveWaitNSeconds(self):
         self.currentlyEditedItem.action.wait_time = self.recordDialog.waitNSecondsTime.value()
         text = 'Czekaj ' + str( self.currentlyEditedItem.action.wait_time ) + ' sekund'
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
 
     def editorSaveForLoop(self):
         self.currentlyEditedItem.action.times = self.recordDialog.forLoopTimes.value()
         text = 'Wykonaj ' + str( self.currentlyEditedItem.action.times ) + ' razy'
-        self.currentlyEditedItem.text = text
         self.currentlyEditedItem.setText( text )
 
     def editorSaveRecording(self):

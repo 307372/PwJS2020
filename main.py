@@ -233,6 +233,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                     item.appendRow([MacroEditorItem(PlaceholderEvent(), item_name), QStandardItem()])
                     self.ui.creatorEditorTreeView.setExpanded( item.index(), True )
             elif is_name_known:
+                print( self.ui.creatorEditorTreeView.selectedIndexes()[0].parent() )
                 parent_index = self.ui.creatorEditorTreeView.selectedIndexes()[0].parent()
                 if not parent_index.isValid():    # if item is from top level of the tree
                     print( 'invalid', parent_index )
@@ -245,6 +246,8 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                         item.appendRow([MacroEditorItem(PlaceholderEvent(), item_name), QStandardItem()])
                         self.ui.creatorEditorTreeView.setExpanded( item.index(), True )
                 else:  # if item in not from top level of the tree
+                    print( 'parent_index', parent_index )
+                    print(  'item from parent_index', self.treeModel.itemFromIndex(parent_index) )
                     print( 'valid', self.treeModel.itemFromIndex(parent_index).text() )
                     item_index = self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1
                     self.treeModel.itemFromIndex( parent_index ).insertRow( item_index, item )
@@ -310,12 +313,18 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         for i in range( len(events) ):
             if i == 0:
                 events[i].action.time = 0
-            elif events[i].action.event_type in ['nseconds', 'keyboard', 'mouse', 'MoveEvent']:
+            elif events[i].action.event_type in ['nseconds', 'keyboard', 'mouse']:
                 events[i].action.time = events[i-1].action.time  # it's checked if i==0 first, so it's safe
             else:
                 # print(events[i].action.event_type, 'not in ["wait", "keyboard", "mouse"]')
-                events[i].action.time = events[i-1].action.time + 0.01  # 10ms
+                events[i].action.time = events[i-1].action.time + 0.1  # 100ms
             print( indentation, events[i].action.time, events[i].action )
+
+            if isinstance( events[i-1].action, MoveEventV2 ):
+                events[i].action.time += events[i-1].action.duration
+            elif events[i-1].action.event_type == 'nseconds':
+                events[i].action.time += events[i-1].action.wait_time
+
             if isinstance( events[i].action, ForEvent ):
                 self.updateTime( events[i].action.event_list, indentation + '   ' )
 
@@ -387,7 +396,6 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                     wait_events_duration += time.time() - before
                 elif event.event_type == 'nseconds':
                     time.sleep( event.wait_time )
-                    wait_events_duration += event.wait_time
                 else:
                     print( 'Nieznany typ eventu oczekiwania' )
             elif isinstance( event, RecordingEvent ):

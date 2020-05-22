@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Rzeczy w miejscach 0.3</string>
+   <string>Rzeczy w miejscach 0.5</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -26,7 +26,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <widget class="QTabWidget" name="zakladki">
+   <widget class="QTabWidget" name="tabs">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -39,110 +39,13 @@
      <enum>Qt::ClickFocus</enum>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
-    <widget class="QWidget" name="aktywne">
-     <attribute name="title">
-      <string>Aktywne</string>
-     </attribute>
-     <widget class="QListWidget" name="listWidget">
-      <property name="geometry">
-       <rect>
-        <x>240</x>
-        <y>160</y>
-        <width>256</width>
-        <height>192</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="wszystkie">
+    <widget class="QWidget" name="macroTab">
      <attribute name="title">
       <string>Wszystkie</string>
      </attribute>
-     <widget class="QTableWidget" name="wszystkieTablica">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>741</width>
-        <height>481</height>
-       </rect>
-      </property>
-      <row>
-       <property name="text">
-        <string>Nowy wiersz</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>id=0</string>
-       </property>
-      </row>
-      <row>
-       <property name="text">
-        <string>id=2</string>
-       </property>
-      </row>
-      <column>
-       <property name="text">
-        <string>Rzeczy</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Miejsca</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Czasy</string>
-       </property>
-      </column>
-      <item row="1" column="0">
-       <property name="text">
-        <string>Chuj</string>
-       </property>
-      </item>
-      <item row="1" column="1">
-       <property name="text">
-        <string>Tutaj</string>
-       </property>
-      </item>
-      <item row="1" column="2">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="checkState">
-        <enum>Unchecked</enum>
-       </property>
-       <property name="flags">
-        <set>ItemIsUserCheckable|ItemIsEnabled</set>
-       </property>
-      </item>
-      <item row="2" column="0">
-       <property name="text">
-        <string>Złoto</string>
-       </property>
-      </item>
-      <item row="2" column="1">
-       <property name="text">
-        <string>Tam</string>
-       </property>
-      </item>
-      <item row="2" column="2">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="checkState">
-        <enum>Unchecked</enum>
-       </property>
-       <property name="flags">
-        <set>ItemIsUserCheckable|ItemIsEnabled</set>
-       </property>
-      </item>
-     </widget>
-     <widget class="QPushButton" name="wszystkieUsun">
+     <widget class="QPushButton" name="macroDelete">
       <property name="geometry">
        <rect>
         <x>690</x>
@@ -155,12 +58,12 @@
        <string>Usuń</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="wszystkieEdytuj">
+     <widget class="QPushButton" name="macroEdit">
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>20</x>
         <y>500</y>
-        <width>75</width>
+        <width>91</width>
         <height>23</height>
        </rect>
       </property>
@@ -168,34 +71,31 @@
        <string>Edytuj</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="wszystkieDodaj">
+     <widget class="QPushButton" name="macroNew">
       <property name="geometry">
        <rect>
-        <x>200</x>
+        <x>130</x>
         <y>500</y>
-        <width>75</width>
+        <width>97</width>
         <height>23</height>
        </rect>
       </property>
       <property name="text">
-       <string>Dodaj</string>
+       <string>Dodaj nowe makro</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="wszystkieAktywuj">
+     <widget class="QTreeView" name="macroTreeView">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>500</y>
-        <width>75</width>
-        <height>23</height>
+        <x>10</x>
+        <y>10</y>
+        <width>751</width>
+        <height>481</height>
        </rect>
-      </property>
-      <property name="text">
-       <string>Aktywuj</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="kreator">
+    <widget class="QWidget" name="creatorTab">
      <attribute name="title">
       <string>Kreator</string>
      </attribute>
@@ -629,7 +529,7 @@
       <zorder>testButton_3</zorder>
      </widget>
     </widget>
-    <widget class="QWidget" name="AC_Group">
+    <widget class="QWidget" name="autoclickerTab">
      <attribute name="title">
       <string>Autoclicker</string>
      </attribute>
@@ -934,7 +834,7 @@
       </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="settings">
+    <widget class="QWidget" name="settingsTab">
      <attribute name="title">
       <string>Ustawienia</string>
      </attribute>

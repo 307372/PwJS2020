@@ -87,7 +87,7 @@ class MacroEditorItem(QStandardItem):  # MEI
 class PlaceholderEvent:
     def __init__(self, time=0):
         self.event_type = 'PlaceholderEvent'
-        self.event_type = time
+        self.time = time
 
     def __str__(self):
         return str(self.event_type)
