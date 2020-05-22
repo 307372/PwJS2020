@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIFOnOHF.ui'
+## Form generated from reading UI file 'GUIgDtHOa.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -48,6 +48,12 @@ class Ui_MainWindow(object):
         self.macroTreeView = QTreeView(self.macroTab)
         self.macroTreeView.setObjectName(u"macroTreeView")
         self.macroTreeView.setGeometry(QRect(10, 10, 751, 481))
+        self.macroTestButton = QPushButton(self.macroTab)
+        self.macroTestButton.setObjectName(u"macroTestButton")
+        self.macroTestButton.setGeometry(QRect(260, 500, 75, 23))
+        self.macroWhatIsThisButton = QPushButton(self.macroTab)
+        self.macroWhatIsThisButton.setObjectName(u"macroWhatIsThisButton")
+        self.macroWhatIsThisButton.setGeometry(QRect(360, 500, 75, 23))
         self.tabs.addTab(self.macroTab, "")
         self.creatorTab = QWidget()
         self.creatorTab.setObjectName(u"creatorTab")
@@ -279,10 +285,12 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Rzeczy w miejscach 0.4", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Rzeczy w miejscach 0.5", None))
         self.macroDelete.setText(QCoreApplication.translate("MainWindow", u"Usu\u0144", None))
         self.macroEdit.setText(QCoreApplication.translate("MainWindow", u"Edytuj", None))
         self.macroNew.setText(QCoreApplication.translate("MainWindow", u"Dodaj nowe makro", None))
+        self.macroTestButton.setText(QCoreApplication.translate("MainWindow", u"testImport", None))
+        self.macroWhatIsThisButton.setText(QCoreApplication.translate("MainWindow", u"Inspect", None))
         self.tabs.setTabText(self.tabs.indexOf(self.macroTab), QCoreApplication.translate("MainWindow", u"Wszystkie", None))
         self.creatorEditorGroup.setTitle(QCoreApplication.translate("MainWindow", u"Edytor", None))
         self.creatorEditorDeleteFromMacro.setText(QCoreApplication.translate("MainWindow", u"Usu\u0144 z makro", None))

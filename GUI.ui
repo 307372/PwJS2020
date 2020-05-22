@@ -94,6 +94,32 @@
        </rect>
       </property>
      </widget>
+     <widget class="QPushButton" name="macroTestButton">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>500</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>testImport</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="macroWhatIsThisButton">
+      <property name="geometry">
+       <rect>
+        <x>360</x>
+        <y>500</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Inspect</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="creatorTab">
      <attribute name="title">

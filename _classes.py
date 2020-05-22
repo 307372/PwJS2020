@@ -1,7 +1,7 @@
 from copy import deepcopy
 from keyboard import KeyboardEvent
 from mouse import ButtonEvent, WheelEvent, MoveEvent
-
+from PySide2.QtCore import Qt
 from PySide2.QtGui import QStandardItem
 
 
@@ -129,3 +129,41 @@ class WaitEvent:
             return 'WaitEvent(event_type=' + str(self.event_type) + ', target_button=' + str(self.target_button) + ', suppress=' + str(self.suppress) + ')'
         else:
             return 'WaitEvent(event_type=' + str(self.event_type) + ', time=' + str(self.time) + ')'
+
+
+class MacroTreeviewItem(QStandardItem):  # MTvI
+    def __init__(self, macro_editor_items_list, name, item_duration, item_hotkey, item_speed, speed_factor=1.0 ):
+        super().__init__(name)
+        self.setCheckable( True )
+        self.setCheckState( Qt.Checked )
+        self.macro_editor_items_list = macro_editor_items_list
+        self.itemDuration = item_duration
+        self.itemHotkey = item_hotkey
+        self.itemSpeed = item_speed
+        self.speed_factor = speed_factor
+        self.widgetHotkey = None
+        self.widgetSpeedFactor = None
+        self.hotkey = None
+
+    def setConnections(self):
+        print( 'Przed podlaczeniem' )
+        self.widgetHotkey.keySequenceChanged.connect( self.hotkeyChanged )
+        print( 'Po podlaczeniu' )
+        # item.widgetHotkey.keySequenceChanged.connect( item.hotkeyChanged )
+    def changes(self):
+        print( 'Coś się zmieniło!')
+
+    def hotkeyChanged(self):
+        print( self.widgetHotkey.keySequence() )
+
+    def speedFactorChanged(self, speed_factor):
+        print( speed_factor )
+
+    def updateSpeedFactor(self, speed_factor ):
+        self.speed_factor = speed_factor
+
+    def updateKeySequence(self, key_sequence ):  # Potrzebne do oszukania connect w Qt
+        self.hotkey = key_sequence
+
+    def __str__(self):
+        return "MTI(hotkey=" + str(self.hotkey) + ', speed_factor=' + str(self.speed_factor) + ')'
