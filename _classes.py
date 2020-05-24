@@ -1,16 +1,23 @@
+import threading
 from copy import deepcopy
 from keyboard import KeyboardEvent
+import keyboard
+import time
 from mouse import ButtonEvent, WheelEvent, MoveEvent
+import mouse
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QStandardItem
 
 
 class RecordingEvent:
-    def __init__(self, name='', events=[], speed_factor=1.0, cut_left=0, cut_right=0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True, events_final=[], time=0):
+    def __init__(self, name='', events=[], speed_factor=1.0, cut_left=0, cut_right=0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True, time=0):
+        print( '__init__' )
         self.event_type = 'RecordingEvent'
         self.name = name
         self.events = events
-        self.events_final = events_final
+        self.events_included = []
+        self.events_cut = []
+        self.events_final = []
         self.speed_factor = speed_factor
         self.cutLeft = cut_left
         self.cutRight = cut_right
@@ -20,24 +27,70 @@ class RecordingEvent:
         self.include_keyboard = include_keyboard
         self.time = time
 
-    def setT0to0(self):  # sets time of first event to 0 and keeps relative time difference between the rest
-        if self.events != []:
-            if self.events[0].time != 0:
-                edited_events = []
-                t0 = float( self.events[0].time )
-                for i in range( len( self.events ) ):
-                    if type( self.events[i] ) == ButtonEvent:
-                        edited_events.append( ButtonEvent( self.events[i].event_type, self.events[i].button, self.events[i].time - t0 ) )
-                    elif type( self.events[i] ) == WheelEvent:
-                        edited_events.append( WheelEvent( self.events[i].delta, self.events[i].time - t0 ) )
-                    elif type( self.events[i] ) == MoveEvent:
-                        edited_events.append( MoveEvent( self.events[i].x, self.events[i].y, self.events[i].time - t0 ) )
-                    elif type( self.events[i] ) == KeyboardEvent:
-                        edited_events.append( deepcopy(self.events[i]) )
-                        edited_events[i].time = float( edited_events[i].time - t0 )
+        self.prepareForPlaying()
+
+    def prepareForPlaying(self):
+        print('prepareForPlaying')
+        self.cutRecording()
+
+    def cutRecording(self):
+        print( 'cutRecording' )
+        self.events_cut = []
+        if self.cutLeft > 0:
+            print( 'RecordingEventCutLeft' )
+            for i in range( len(self.events) ):
+                if self.events[i].time > self.events[0].time + self.cutLeft:
+                    self.events_cut = self.events[i:]
+                    break
+        else:
+            self.events_cut = self.events
+
+        if self.cutRight > 0:
+            print('RecordingEventCutRight')
+            for i in reversed(range(len(self.events_cut))):
+                if i == 0:
+                    self.events_cut = []
+                elif self.events_cut[i].time < self.events_cut[-1].time - self.cutRight:
+                    self.events_cut = self.events_cut[:i]
+                    break
+        self.excludeExcludedEvents()
+
+    def excludeExcludedEvents(self):
+        print('excludeExcludedEvents')
+        if self.events_cut != []:
+            if self.events_cut[0].time != 0:
+                self.events_final = []
+                t0 = 0
+
+                for event in self.events_cut:
+
+                    if isinstance( event, MoveEvent ) and self.include_moves:
+                        if t0 == 0:
+                            t0 = float(event.time)
+                        move = MoveEventV2( x=event.x, y=event.y, time=float(event.time - t0) )
+                        self.events_final.append( move )
+
+                    elif isinstance( event, ButtonEvent ) and self.include_clicks:
+                        if t0 == 0:
+                            t0 = float(event.time)
+                        button = ButtonEventV2( event_type=event.event_type, button=event.button, play_at=float(event.time - t0) )
+                        self.events_final.append( button )
+
+                    elif isinstance( event, WheelEvent ) and self.include_wheel:
+                        if t0 == 0:
+                            t0 = float(event.time)
+                        wheel = WheelEventV2( delta=event.delta, time=float(event.time - t0) )
+                        self.events_final.append( wheel )
+
+                    elif isinstance( event, KeyboardEvent ) and self.include_keyboard:
+                        if t0 == 0:
+                            t0 = float(event.time)
+                        # event.time = float(event.time - t0)
+                        self.events_final.append( deepcopy(event) )
+                        self.events_final[-1].time -= t0
+
                     else:
-                        print("Nieznany typ eventu")
-                self.events_final = edited_events
+                        print( 'Nieznany typ eventu!' )
 
 
 class MoveEventV2:
@@ -82,6 +135,10 @@ class MacroEditorItem(QStandardItem):  # MEI
 
     def __str__(self):
         return 'MEI(' + str(self.action) + ')'
+
+    # def copyDeeply(self):
+    #    actionV2 = []
+    #    for
 
 
 class PlaceholderEvent:
@@ -143,27 +200,163 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
         self.speed_factor = speed_factor
         self.widgetHotkey = None
         self.widgetSpeedFactor = None
-        self.hotkey = None
+        self.hotkey = ''
 
-    def setConnections(self):
-        print( 'Przed podlaczeniem' )
-        self.widgetHotkey.keySequenceChanged.connect( self.hotkeyChanged )
-        print( 'Po podlaczeniu' )
-        # item.widgetHotkey.keySequenceChanged.connect( item.hotkeyChanged )
-    def changes(self):
-        print( 'Coś się zmieniło!')
-
-    def hotkeyChanged(self):
-        print( self.widgetHotkey.keySequence() )
-
-    def speedFactorChanged(self, speed_factor):
-        print( speed_factor )
+        self.macroThread = threading.Event()
+        self.isMacroRunning = False
 
     def updateSpeedFactor(self, speed_factor ):
         self.speed_factor = speed_factor
 
-    def updateKeySequence(self, key_sequence ):  # Potrzebne do oszukania connect w Qt
-        self.hotkey = key_sequence
+    def updateKeySequence(self, key_sequence ):
+        if key_sequence != '':
+            print( "MTI_KeySequence:", self.text(), key_sequence )
+            if self.hotkey != '':
+                keyboard.remove_hotkey(self.macroPrep)
+            keyboard.add_hotkey(key_sequence, self.macroPrep)
+            self.hotkey = key_sequence
+        else:
+            print("MTI_HotkeyChange ''")
+            if self.hotkey != '':
+                keyboard.remove_hotkey(self.hotkey)
+            self.hotkey = key_sequence
+
+    def macroPrep(self):
+        if not self.isMacroRunning:
+            self.isMacroRunning = True
+            thread = threading.Thread(target=self.macroStart)
+            thread.start()
+
+    def macroStart(self):
+        begin = time.time()
+        self.macroPlay( self.macro_editor_items_list, self.speed_factor )
+        print( 'total duration:', time.time() - begin )
+
+    def macroPlay( self, target, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
+        timedelta = time.time()
+        self.macroThread = threading.Event()
+        state = keyboard.stash_state()
+        # recording_events_time = 0
+        wait_events_duration = 0
+        for_events_duration = 0
+        t0 = time.time()
+        last_time = 0
+
+        for item in target:
+            event = item.action
+            if speed_factor > 0:  # temporal stuff
+                theoretical_wait_time = (event.time - last_time) / speed_factor
+                target_time = t0 + wait_events_duration + for_events_duration + theoretical_wait_time
+                real_wait_time = target_time - time.time()
+                # print( 'theory:', theoretical_wait_time, ' reality:', real_wait_time, ' total:', event.time )
+                if real_wait_time > 0:
+                    if self.macroThread.wait(timeout=real_wait_time):
+                        break
+                # recording_events_time = 0
+                t0 += theoretical_wait_time
+                last_time = event.time
+
+            if isinstance(event, (MoveEventV2, MoveEvent)) and include_moves:
+                mouse.move(event.x, event.y, absolute=event.absolute, duration=event.duration)
+            elif isinstance(event, (ButtonEventV2, ButtonEvent)) and include_clicks:
+                if event.event_type == mouse.UP:
+                    mouse.release(event.button)
+                elif event.event_type == mouse.DOWN:
+                    mouse.press(event.button)
+                elif event.event_type == 'double':  # do testu
+                    mouse.double_click(event.button)  #
+                elif event.event_type == 'click':  # do testu
+                    mouse.click(event.button)  #
+                else:
+                    print('Nieznany typ eventu myszy')
+            elif isinstance(event, KeyboardEvent) and include_keyboard:
+                key = event.scan_code or event.name
+                if event.event_type == keyboard.KEY_DOWN:
+                    keyboard.press(key)
+                elif event.event_type == keyboard.KEY_UP:
+                    keyboard.release(key)
+                elif event.event_type == 'write':
+                    keyboard.write(event.scan_code)  # do testu musi być nadpisany tekstem!
+                elif event.event_type == 'click':
+                    keyboard.press_and_release(key)
+                elif event.event_type == 'hotkey':
+                    keyboard.send(key)  # do testu
+                elif event.event_type == 'releaseall':
+                    keyboard.stash_state()  # do testu
+                else:
+                    print('Nieznany typ eventu klawiatury')
+            elif isinstance(event, (WheelEvent, WheelEventV2)) and include_wheel:
+                mouse.wheel(event.delta)
+            elif isinstance(event, WaitEvent):
+                if event.event_type == 'mouse':
+                    before = time.time()
+                    mouse.wait(event.target_button)
+                    wait_events_duration += time.time() - before
+                elif event.event_type == 'keyboard':
+                    before = time.time()
+                    keyboard.wait(event.target_button, suppress=event.suppress)
+                    wait_events_duration += time.time() - before
+                elif event.event_type == 'nseconds':
+                    pass  # waiting for this event is handled in the beginning of the loop
+                else:
+                    print('Nieznany typ eventu oczekiwania')
+            elif isinstance(event, RecordingEvent):
+                #begin = time.time()
+                # print( event.speed_factor )
+                # print( event.events_final )
+                self.playRecording(event.events_final, event.speed_factor * self.speed_factor, event.include_clicks, event.include_moves, event.include_wheel, event.include_keyboard)
+                #for_events_duration += time.time() - begin
+
+            elif isinstance(event, ForEvent):  # PSUJE CZASY? CHYBA NIE, DO TESTU
+                before = time.time()
+                for i in range(event.times):
+                    self.macroPlay(event.event_list, speed_factor, include_clicks, include_moves, include_wheel,
+                                   include_keyboard)
+                    time.sleep(0.0025/speed_factor)           # PAMIĘTAJ O TYM, JEŚLI CZAS PRZESTANIE SIĘ ZGADZAC
+                for_events_duration += time.time() - before
+            elif isinstance(event, PlaceholderEvent):
+                pass
+            else:
+                print('Nieznany typ eventu', event)
+        self.isMacroRunning = False
+        keyboard.restore_modifiers(state)
+        keyboard.release(self.hotkey)
+        # print(time.time() - timedelta)
+
+        # print("MTI_macroPlay")
+
+    def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
+        timedelta = time.time()
+        state = keyboard.stash_state()
+        t0 = time.time()
+        last_time = 0
+
+        for event in recording:
+            if speed_factor > 0:
+                target_time = t0 + (event.time - last_time) / speed_factor
+                real_wait_time = target_time - time.time()
+                if real_wait_time > 0:
+                    if self.macroThread.wait(timeout=real_wait_time):
+                        break
+                t0 = target_time
+                last_time = event.time
+            if isinstance(event, MoveEventV2) and include_moves:
+                mouse.move(event.x, event.y)
+            elif isinstance(event, ButtonEventV2) and include_clicks:
+                if event.event_type == mouse.UP:
+                    mouse.release(event.button)
+                else:
+                    mouse.press(event.button)
+            elif isinstance(event, KeyboardEvent) and include_keyboard:
+                key = event.scan_code or event.name
+                keyboard.press(key) if event.event_type == keyboard.KEY_DOWN else keyboard.release(key)
+            elif isinstance(event, WheelEventV2) and include_wheel:
+                mouse.wheel(event.delta)
+        keyboard.restore_modifiers(state)
+        keyboard.release(self.hotkey)
+        # print(time.time() - timedelta)
+        print("MTI_playRecording")
+        return time.time() - timedelta
 
     def __str__(self):
         return "MTI(hotkey=" + str(self.hotkey) + ', speed_factor=' + str(self.speed_factor) + ')'

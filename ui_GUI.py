@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIgDtHOa.ui'
+## Form generated from reading UI file 'GUIdacMXt.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -151,6 +151,9 @@ class Ui_MainWindow(object):
         self.testButton_3 = QPushButton(self.creatorEditorGroup)
         self.testButton_3.setObjectName(u"testButton_3")
         self.testButton_3.setGeometry(QRect(210, 430, 75, 23))
+        self.label_10 = QLabel(self.creatorEditorGroup)
+        self.label_10.setObjectName(u"label_10")
+        self.label_10.setGeometry(QRect(200, 240, 90, 13))
         self.creatorEditorDeleteFromMacro.raise_()
         self.creatorEditorActions.raise_()
         self.creatorEditorAddToMacro.raise_()
@@ -172,6 +175,7 @@ class Ui_MainWindow(object):
         self.WhatIsThisButton.raise_()
         self.previewButton.raise_()
         self.testButton_3.raise_()
+        self.label_10.raise_()
         self.tabs.addTab(self.creatorTab, "")
         self.autoclickerTab = QWidget()
         self.autoclickerTab.setObjectName(u"autoclickerTab")
@@ -291,7 +295,7 @@ class Ui_MainWindow(object):
         self.macroNew.setText(QCoreApplication.translate("MainWindow", u"Dodaj nowe makro", None))
         self.macroTestButton.setText(QCoreApplication.translate("MainWindow", u"testImport", None))
         self.macroWhatIsThisButton.setText(QCoreApplication.translate("MainWindow", u"Inspect", None))
-        self.tabs.setTabText(self.tabs.indexOf(self.macroTab), QCoreApplication.translate("MainWindow", u"Wszystkie", None))
+        self.tabs.setTabText(self.tabs.indexOf(self.macroTab), QCoreApplication.translate("MainWindow", u"Makra", None))
         self.creatorEditorGroup.setTitle(QCoreApplication.translate("MainWindow", u"Edytor", None))
         self.creatorEditorDeleteFromMacro.setText(QCoreApplication.translate("MainWindow", u"Usu\u0144 z makro", None))
         ___qtreewidgetitem = self.creatorEditorActions.headerItem()
@@ -360,6 +364,7 @@ class Ui_MainWindow(object):
         self.WhatIsThisButton.setText(QCoreApplication.translate("MainWindow", u"Co to jest?", None))
         self.previewButton.setText(QCoreApplication.translate("MainWindow", u"Odtw\u00f3rz", None))
         self.testButton_3.setText(QCoreApplication.translate("MainWindow", u"SelectionTest", None))
+        self.label_10.setText(QCoreApplication.translate("MainWindow", u"(przyciski testowe)", None))
         self.tabs.setTabText(self.tabs.indexOf(self.creatorTab), QCoreApplication.translate("MainWindow", u"Kreator", None))
         self.AC_Time.setTitle(QCoreApplication.translate("MainWindow", u"Odst\u0119p czasowy mi\u0119dzy klikni\u0119ciami", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Milisekundy", None))

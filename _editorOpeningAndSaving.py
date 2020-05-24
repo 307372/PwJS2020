@@ -1,8 +1,8 @@
 import keyboard
-from mouse import MoveEvent
-from _classes import MoveEventV2, WheelEventV2
-
+from mouse import ButtonEvent, WheelEvent, MoveEvent
+from _classes import RecordingEvent, MoveEventV2, WheelEventV2
 from PySide2.QtGui import QKeySequence
+
 
 
 class OpeningAndSaving:
@@ -198,16 +198,16 @@ class OpeningAndSaving:
     def openInEditorRecording(self):
         # print( self.ui.creatorEditorActions.selectedItems()[0].text(0) )
 
-        event_list = self.currentlyEditedItem.action
-        self.recordDialog.name.setText( event_list.name )
-        self.recorded = event_list.events
-        self.recordDialog.replaySpeed.setValue( event_list.speed_factor )
-        self.recordDialog.cutTimeLeft.setValue( event_list.cutLeft )
-        self.recordDialog.cutTimeRight.setValue( event_list.cutRight )
-        self.recordDialog.includeMoves.setChecked( event_list.include_moves )
-        self.recordDialog.includeClicks.setChecked( event_list.include_clicks )
-        self.recordDialog.includeWheel.setChecked( event_list.include_wheel )
-        self.recordDialog.includeKeyboard.setChecked( event_list.include_keyboard )
+        recording_event = self.currentlyEditedItem.action
+        self.recordDialog.name.setText( recording_event.name )
+        self.recordedObject = recording_event
+        self.recordDialog.replaySpeed.setValue( recording_event.speed_factor )
+        self.recordDialog.cutTimeLeft.setValue( recording_event.cutLeft )
+        self.recordDialog.cutTimeRight.setValue( recording_event.cutRight )
+        self.recordDialog.includeMoves.setChecked( recording_event.include_moves )
+        self.recordDialog.includeClicks.setChecked( recording_event.include_clicks )
+        self.recordDialog.includeWheel.setChecked( recording_event.include_wheel )
+        self.recordDialog.includeKeyboard.setChecked( recording_event.include_keyboard )
 
         self.creatorRecordUpdateTimeAndCuts()
 
@@ -271,6 +271,7 @@ class OpeningAndSaving:
                 self.editorSaveRecording()
             else:
                 print('Nieznana strona! id =', page)
+            self.macroUpdateTime()
 
     def editorSaveMouseMovement(self):
         text = 'Przemieść kursor '
@@ -419,14 +420,17 @@ class OpeningAndSaving:
         self.currentlyEditedItem.setText( text )
 
     def editorSaveRecording(self):
-        self.creatorRecordFinalEdit()
-        self.currentlyEditedItem.action.name = self.recordDialog.name.text()
-        self.currentlyEditedItem.action.events = self.recorded
-        self.currentlyEditedItem.action.events_final = self.recordedFinal
-        self.currentlyEditedItem.action.speed_factor = self.recordDialog.replaySpeed.value()
-        self.currentlyEditedItem.action.cutLeft = self.recordDialog.cutTimeLeft.value()
-        self.currentlyEditedItem.action.cutRight = self.recordDialog.cutTimeRight.value()
-        self.currentlyEditedItem.action.include_clicks = self.recordDialog.includeClicks.isChecked()
-        self.currentlyEditedItem.action.include_moves = self.recordDialog.includeMoves.isChecked()
-        self.currentlyEditedItem.action.include_wheel = self.recordDialog.includeWheel.isChecked()
-        self.currentlyEditedItem.action.include_keyboard = self.recordDialog.includeKeyboard.isChecked()
+        name = self.recordDialog.name.text()
+        events = self.recordedObject.events
+        speed_factor = self.recordDialog.replaySpeed.value()
+        cutLeft = self.recordDialog.cutTimeLeft.value()
+        cutRight = self.recordDialog.cutTimeRight.value()
+        include_clicks = self.recordDialog.includeClicks.isChecked()
+        include_moves = self.recordDialog.includeMoves.isChecked()
+        include_wheel = self.recordDialog.includeWheel.isChecked()
+        include_keyboard = self.recordDialog.includeKeyboard.isChecked()
+        self.currentlyEditedItem.action = RecordingEvent( name=name, events=events, speed_factor=speed_factor,
+                                                          cut_left=cutLeft, cut_right=cutRight,
+                                                          include_clicks=include_clicks, include_moves=include_moves,
+                                                          include_wheel=include_wheel, include_keyboard=include_keyboard)
+

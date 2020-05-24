@@ -43,7 +43,7 @@
     </property>
     <widget class="QWidget" name="macroTab">
      <attribute name="title">
-      <string>Wszystkie</string>
+      <string>Makra</string>
      </attribute>
      <widget class="QPushButton" name="macroDelete">
       <property name="geometry">
@@ -532,6 +532,19 @@
         <string>SelectionTest</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_10">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>240</y>
+         <width>90</width>
+         <height>13</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>(przyciski testowe)</string>
+       </property>
+      </widget>
       <zorder>creatorEditorDeleteFromMacro</zorder>
       <zorder>creatorEditorActions</zorder>
       <zorder>creatorEditorAddToMacro</zorder>
@@ -553,6 +566,7 @@
       <zorder>WhatIsThisButton</zorder>
       <zorder>previewButton</zorder>
       <zorder>testButton_3</zorder>
+      <zorder>label_10</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="autoclickerTab">
