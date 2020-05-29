@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'recordingsqnVES.ui'
+## Form generated from reading UI file 'recordingmGwrQw.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -395,7 +395,7 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Edytor akcji", None))
         self.mouseMovementGB.setTitle(QCoreApplication.translate("Dialog", u"Opcje ruchu myszy", None))
         self.movementAbsolute.setText(QCoreApplication.translate("Dialog", u"Wsp\u00f3\u0142rz\u0119dne bezwzgl\u0119dne", None))
         self.movementX.setPrefix("")
@@ -468,6 +468,9 @@ class Ui_Dialog(object):
         self.previewHotkey.setKeySequence(QCoreApplication.translate("Dialog", u"Ctrl+P", None))
         self.universalButtonsGroup.setTitle("")
         self.save.setText(QCoreApplication.translate("Dialog", u"Zapisz", None))
+#if QT_CONFIG(tooltip)
+        self.addToActions.setToolTip(QCoreApplication.translate("Dialog", u"Dotyczy jedynie nagra\u0144", None))
+#endif // QT_CONFIG(tooltip)
         self.addToActions.setText(QCoreApplication.translate("Dialog", u"Dodaj do czynno\u015bci", None))
         self.cancel.setText(QCoreApplication.translate("Dialog", u"Anuluj", None))
     # retranslateUi

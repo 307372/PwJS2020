@@ -134,11 +134,10 @@ class MacroEditorItem(QStandardItem):  # MEI
         self.setEditable(False)
 
     def __str__(self):
-        return 'MEI(' + str(self.action) + ')'
+        return 'MEI(' + str(self.action) + ', ' + self.text() + ')'
 
-    # def copyDeeply(self):
-    #    actionV2 = []
-    #    for
+    def __reduce__(self):
+        return (self.__class__, ( self.action, self.text() ) )
 
 
 class PlaceholderEvent:
@@ -189,37 +188,56 @@ class WaitEvent:
 
 
 class MacroTreeviewItem(QStandardItem):  # MTvI
-    def __init__(self, macro_editor_items_list, name, item_duration, item_hotkey, item_speed, speed_factor=1.0 ):
+    def __init__(self, macro_editor_items_list, name, item_duration, item_hotkey, item_speed, speed_factor=1.0, hotkey='' ):
         super().__init__(name)
         self.setCheckable( True )
         self.setCheckState( Qt.Checked )
+        self.active = self.checkState()
         self.macro_editor_items_list = macro_editor_items_list
         self.itemDuration = item_duration
         self.itemHotkey = item_hotkey
         self.itemSpeed = item_speed
-        self.speed_factor = speed_factor
         self.widgetHotkey = None
         self.widgetSpeedFactor = None
-        self.hotkey = ''
+        self.speed_factor = speed_factor
+        self.hotkey = hotkey
 
         self.macroThread = threading.Event()
         self.isMacroRunning = False
+        self.updateCheckState( self.active )
+
+    def updateCheckState(self, checked):
+        print( 'updateCheckState, state=', checked )
+        if checked == Qt.Checked:
+            self.active = Qt.Checked
+            self.setCheckState( Qt.Checked )
+        else:
+            self.active = Qt.Unchecked
+            self.setCheckState( Qt.Unchecked )
 
     def updateSpeedFactor(self, speed_factor ):
+        print( self.text() + '.updateSpeedFactor', speed_factor )
         self.speed_factor = speed_factor
 
-    def updateKeySequence(self, key_sequence ):
-        if key_sequence != '':
-            print( "MTI_KeySequence:", self.text(), key_sequence )
-            if self.hotkey != '':
-                keyboard.remove_hotkey(self.macroPrep)
-            keyboard.add_hotkey(key_sequence, self.macroPrep)
-            self.hotkey = key_sequence
+    def updateKeySequence(self, key_sequence, just_loaded=False ):
+        if not just_loaded:
+            if key_sequence != '':
+                print( "MTI_KeySequence:", self.text(), key_sequence )
+                if self.hotkey != '':
+                    keyboard.remove_hotkey(self.macroPrep)
+                keyboard.add_hotkey(key_sequence, self.macroPrep)
+                self.hotkey = key_sequence
+            else:
+                print("MTI_HotkeyChange", self.text(), " ' ''", key_sequence)
+                if self.hotkey != '':
+                    keyboard.remove_hotkey(self.hotkey)
+                self.hotkey = key_sequence
         else:
-            print("MTI_HotkeyChange ''")
-            if self.hotkey != '':
-                keyboard.remove_hotkey(self.hotkey)
-            self.hotkey = key_sequence
+            if key_sequence != '':
+                self.hotkey = key_sequence
+                keyboard.add_hotkey( key_sequence, self.macroPrep )
+            else:
+                self.hotkey = key_sequence
 
     def macroPrep(self):
         if not self.isMacroRunning:
@@ -359,4 +377,16 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
         return time.time() - timedelta
 
     def __str__(self):
-        return "MTI(hotkey=" + str(self.hotkey) + ', speed_factor=' + str(self.speed_factor) + ')'
+        return "MTI(checkState=" + str(bool(self.checkState())) + \
+               ', active=' + str(self.active) + \
+               ', isCheckable=' + str(bool(self.isCheckable())) + \
+               ', itemDuration=' + str(self.itemDuration) + \
+               ', itemHotkey=' + str(self.itemHotkey) + \
+               ', itemSpeed=' + str(self.itemSpeed) + \
+               ', widgetHotkey=' + str(self.widgetHotkey) + \
+               ', widgetSpeedFactor=' + str(self.widgetSpeedFactor) + \
+               ', speed_factor=' + str(self.speed_factor) + \
+               ', hotkey=' + str(self.hotkey) + ')\nMTI list' + str([ str(event) for event in self.macro_editor_items_list ])
+
+    def __reduce__(self):
+        return (self.__class__, ( self.macro_editor_items_list, self.text(), None, None, None, self.speed_factor, self.hotkey ) )

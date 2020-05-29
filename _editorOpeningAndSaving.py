@@ -12,10 +12,10 @@ class OpeningAndSaving:
         if not indexes == []:
             self.currentlyEditedItem = self.treeModel.itemFromIndex(self.ui.creatorEditorTreeView.selectedIndexes()[0])
             event = self.treeModel.itemFromIndex(indexes[0]).action
-
+            self.recordDialog.addToActions.setDisabled(True)
             event_type = type(event).__name__
             # print( event_type )
-
+            # TUTAJ DAC RZECZY self.recordDialog.addToActions.
             if event_type in ['MoveEvent', 'MoveEventV2']:
                 print(event_type, 'id=0')
                 self.creatorSelectEditorPageByID(0)
@@ -89,6 +89,7 @@ class OpeningAndSaving:
 
             elif event_type == 'RecordingEvent':
                 print(event_type, 'id=10')
+                self.recordDialog.addToActions.setDisabled(False)
                 self.creatorSelectEditorPageByID(10)
                 print( 'Edition implemented' )
                 self.openInEditorRecording()
@@ -98,6 +99,7 @@ class OpeningAndSaving:
 
             else:
                 print('W ogóle nieznany typ eventu!', event_type)
+            self.creatorRecordDisplay()
 
     def openInEditorMouseMovement(self):
         print( self.currentlyEditedItem )

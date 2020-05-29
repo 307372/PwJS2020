@@ -2,9 +2,9 @@
 hours = 0
 minutes = 0
 seconds = 0
-miliseconds = 10
+miliseconds = 1
 whichbutton = 0
-hotkey = Ctrl+Q
+hotkey = `
 clickuntilstopped = True
 clickntimes = False
 clickntimesn = 1

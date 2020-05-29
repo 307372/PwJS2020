@@ -24,8 +24,11 @@ class RecordMethods:
                 QTreeWidgetItem(self.ui.creatorEditorActions.topLevelItem(3), [key])
 
     def creatorRecordDisplay(self):
-        self.dialog.show()
-        self.dialog.exec_()
+        if not self.isDialogOpen:
+            self.isDialogOpen = True
+            self.dialog.move(self.x() + 793, self.y())
+            self.dialog.show()
+            self.dialog.exec_()
 
     def creatorRecordStart(self):
         if not self.isRecordingRunning:
@@ -62,10 +65,14 @@ class RecordMethods:
     def creatorRecordUpdateTimeAndCuts(self):
         print( "creatorRecordUpdateTimeAndCuts" )
         self.recordedObject.prepareForPlaying()
-        self.recordDialog.timeBase.setText(str("%.2f" % (self.recordedObject.events[-1].time - self.recordedObject.events[0].time ) ) )
-        self.recordDialog.cutTimeLeft.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
-        self.recordDialog.cutTimeRight.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
-        # self.recordedObject.cutRecording()
+        if self.recordedObject.events != []:
+            self.recordDialog.timeBase.setText(str("%.2f" % (self.recordedObject.events[-1].time - self.recordedObject.events[0].time ) ) )
+            self.recordDialog.cutTimeLeft.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
+            self.recordDialog.cutTimeRight.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
+        else:
+            self.recordDialog.timeBase.setText( '0' )
+            self.recordDialog.cutTimeLeft.setMaximum(0)
+            self.recordDialog.cutTimeRight.setMaximum(0)
         self.creatorRecordTimeFinalUpdate()
 
     def creatorRecordHotkeyChange(self):
@@ -211,6 +218,7 @@ class RecordMethods:
     def creatorRecordOverwriteConfirmed(self, i):
         if i.text() == 'OK':
             self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recordedObject.events, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
+            self.pickleRecordings()
             print("Overwritten")
 
     def creatorRecordAddToActions(self):
@@ -221,25 +229,8 @@ class RecordMethods:
             else:
                 QTreeWidgetItem( self.ui.creatorEditorActions.topLevelItem(3), [self.recordDialog.name.text()] )
                 self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recordedObject.events, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
-    """
-    def creatorRecordCut(self):  # do wywalenia
-        if self.recordDialog.cutTimeLeft.value() > 0:
-            print( 'creatorRecordCutLeft' )
-            for i in range( len(self.recorded) ):
-                if self.recorded[i].time > self.recorded[0].time + self.recordDialog.cutTimeLeft.value():
-                    self.recordedCut = self.recorded[i:]
-                    break
-        else:
-            self.recordedCut = self.recorded
-        if self.recordDialog.cutTimeRight.value() > 0:
-            print('creatorRecordCutRight')
-            for i in reversed(range(len(self.recordedCut))):
-                if i == 0:
-                    self.recordedCut = []
-                elif self.recordedCut[i].time < self.recordedCut[-1].time - self.recordDialog.cutTimeRight.value():
-                    self.recordedCut = self.recordedCut[:i]
-                    break
-    """
+                self.pickleRecordings()
+
     def creatorRecordRightSliderSpinBoxSync(self):  # Slider changes value => SpinBox value is changed
         if self.recordDialog.timeBase.text() != '':
             value = self.recordDialog.cutSliderRight.value() / 1000 * float( self.recordDialog.timeBase.text() )
@@ -287,23 +278,3 @@ class RecordMethods:
             self.recordDialog.timeFinal.setText( str( "%.2f" % self.recordedObject.events_final[-1].time ))   # ( ( self.recordedCut[-1].time - self.recordedCut[0].time ) * self.recordDialog.replaySpeed.value() )))
         else:
             self.recordDialog.timeFinal.setText('0,00')
-
-    """
-    def creatorRecordFinalEdit(self):  # do wywalenia
-        if self.recordedCut != []:
-            self.recordedFinal = []
-            t0 = float( self.recordedCut[0].time )
-            for i in range( len( self.recordedCut ) ):
-                if type( self.recordedCut[i] ) == ButtonEvent:
-                    self.recordedFinal.append( ButtonEvent( self.recordedCut[i].event_type, self.recordedCut[i].button, self.recordedCut[i].time - t0 ) )
-                elif type( self.recordedCut[i] ) == WheelEvent:
-                    self.recordedFinal.append( WheelEvent( self.recordedCut[i].delta, self.recordedCut[i].time - t0 ) )
-                elif type( self.recordedCut[i] ) == MoveEvent:
-                    self.recordedFinal.append( MoveEvent( self.recordedCut[i].x, self.recordedCut[i].y, self.recordedCut[i].time - t0 ) )
-                elif type( self.recordedCut[i] ) == KeyboardEvent:
-                    self.recordedFinal.append( deepcopy(self.recordedCut[i]) )
-                    self.recordedFinal[i].time = float( self.recordedFinal[i].time - t0 )
-                else:
-                    print("Nieznany typ eventu")
-
-    """

@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Rzeczy w miejscach 0.5</string>
+   <string>Rzeczy w miejscach 0.6</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -94,30 +94,56 @@
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="macroTestButton">
-      <property name="geometry">
-       <rect>
-        <x>260</x>
-        <y>500</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>testImport</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="macroWhatIsThisButton">
       <property name="geometry">
        <rect>
-        <x>360</x>
-        <y>500</y>
-        <width>75</width>
+        <x>660</x>
+        <y>370</y>
+        <width>91</width>
         <height>23</height>
        </rect>
       </property>
       <property name="text">
        <string>Inspect</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="macroSaveAllMacrosButton">
+      <property name="geometry">
+       <rect>
+        <x>661</x>
+        <y>400</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save all macros</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="macroLoadAllMacrosButton">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>430</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Load all macros</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="macroClearMacroDataButton">
+      <property name="geometry">
+       <rect>
+        <x>659</x>
+        <y>460</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Clear macro data</string>
       </property>
      </widget>
     </widget>
@@ -351,19 +377,6 @@
         <string>Nazwa makra</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="testSaveButton">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>260</y>
-         <width>75</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Zapisz</string>
-       </property>
-      </widget>
       <widget class="QPushButton" name="creatorEditorClear">
        <property name="geometry">
         <rect>
@@ -416,45 +429,6 @@
         <string>Lista komend tworzących makro</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="creatorEditorEdit">
-       <property name="geometry">
-        <rect>
-         <x>350</x>
-         <y>480</y>
-         <width>81</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Edytuj</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="testLoadButton">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>300</y>
-         <width>75</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Wczytaj</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="testButton">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>340</y>
-         <width>75</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Update</string>
-       </property>
-      </widget>
       <widget class="QTreeView" name="creatorEditorTreeView">
        <property name="geometry">
         <rect>
@@ -480,24 +454,11 @@
         <number>200</number>
        </attribute>
       </widget>
-      <widget class="QPushButton" name="testButton_2">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>370</y>
-         <width>75</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>timeTest</string>
-       </property>
-      </widget>
       <widget class="QPushButton" name="WhatIsThisButton">
        <property name="geometry">
         <rect>
          <x>210</x>
-         <y>400</y>
+         <y>370</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -523,7 +484,7 @@
        <property name="geometry">
         <rect>
          <x>210</x>
-         <y>430</y>
+         <y>400</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -536,7 +497,7 @@
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>240</y>
+         <y>350</y>
          <width>90</width>
          <height>13</height>
         </rect>
@@ -545,28 +506,6 @@
         <string>(przyciski testowe)</string>
        </property>
       </widget>
-      <zorder>creatorEditorDeleteFromMacro</zorder>
-      <zorder>creatorEditorActions</zorder>
-      <zorder>creatorEditorAddToMacro</zorder>
-      <zorder>creatorEditorMoveUp</zorder>
-      <zorder>creatorEditorMoveDown</zorder>
-      <zorder>creatorEditorSave</zorder>
-      <zorder>creatorEditorName</zorder>
-      <zorder>label_9</zorder>
-      <zorder>creatorEditorClear</zorder>
-      <zorder>creatorEditorDeleteFromActions</zorder>
-      <zorder>creatorEditorNewRecording</zorder>
-      <zorder>label_8</zorder>
-      <zorder>creatorEditorEdit</zorder>
-      <zorder>creatorEditorTreeView</zorder>
-      <zorder>testSaveButton</zorder>
-      <zorder>testLoadButton</zorder>
-      <zorder>testButton</zorder>
-      <zorder>testButton_2</zorder>
-      <zorder>WhatIsThisButton</zorder>
-      <zorder>previewButton</zorder>
-      <zorder>testButton_3</zorder>
-      <zorder>label_10</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="autoclickerTab">
@@ -962,22 +901,6 @@
     <hint type="destinationlabel">
      <x>205</x>
      <y>518</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>creatorEditorTreeView</sender>
-   <signal>clicked(QModelIndex)</signal>
-   <receiver>creatorEditorEdit</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>517</x>
-     <y>433</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>419</x>
-     <y>545</y>
     </hint>
    </hints>
   </connection>
