@@ -15,7 +15,7 @@ from collections import namedtuple
 
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox, QTreeWidgetItem
 from PySide2.QtCore import QSignalBlocker, QRegularExpression
-from PySide2.QtGui import QStandardItemModel, QStandardItem
+from PySide2.QtGui import QStandardItemModel, QStandardItem, QKeySequence
 from ui_GUI import Ui_MainWindow
 from recording_GUI import Ui_Dialog
 
@@ -38,8 +38,12 @@ class SettingsMethods:
                 'clickNTimes': self.ui.AC_ClickNTimes.isChecked(),
                 'clickNTimesN': self.ui.AC_ClickNTimesN.value()
             }
-            config['test'] = {
-                'abc': 'efg'
+            config['general'] = {
+                'abortHotkey': self.ui.abortHotkey.keySequence().toString()
+            }
+            config['recording'] = {
+                'recordingHotkey': self.recordDialog.recordingHotkey.keySequence().toString(),
+                'previewHotkey': self.recordDialog.previewHotkey.keySequence().toString()
             }
             with open(destination, 'w') as f:
                 config.write(f)
@@ -53,6 +57,7 @@ class SettingsMethods:
         parser = ConfigParser()
         parser.read( destination )
 
+        # autoclicker
         self.ui.AC_Hours.setValue(parser.getint('autoclicker', 'hours'))
         self.ui.AC_Minutes.setValue(parser.getint('autoclicker', 'minutes'))
         self.ui.AC_Seconds.setValue(parser.getint('autoclicker', 'seconds'))
@@ -62,9 +67,18 @@ class SettingsMethods:
         self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker', 'clickUntilStopped'))
         self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker', 'clickNTimes'))
         self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker', 'clickNTimesN'))
+
+        # general
+        self.ui.abortHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'general', 'abortHotkey' )))
+        self.updateAbortionHotkey()
         print( 'loadAllSettings' )
 
+        # Recording
+        self.recordDialog.recordingHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'recording', 'recordingHotkey' )))
+        self.recordDialog.previewHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'recording', 'previewHotkey' )))
+
     def settingsDefaultConfirmation(self):
+        print( 'settingsDefaultConfirmation' )
         msg = QMessageBox()
         msg.setWindowTitle("Resetowanie ustawień")
         msg.setText("Czy na pewno chcesz zresetować obecne ustawienia?")

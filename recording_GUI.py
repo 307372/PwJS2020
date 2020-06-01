@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'recordingmGwrQw.ui'
+## Form generated from reading UI file 'recordingLOvkqm.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -143,27 +143,13 @@ class Ui_Dialog(object):
 
         self.verticalLayout_4.addWidget(self.typeKeyRelease)
 
-        self.keyboardButtonSelection = QLineEdit(self.keyboardButtonGB)
-        self.keyboardButtonSelection.setObjectName(u"keyboardButtonSelection")
-        self.keyboardButtonSelection.setGeometry(QRect(30, 70, 113, 20))
-        self.keyboardButtonSelection.setMaxLength(1)
-        self.keyboardButtonSelection.setCursorPosition(0)
         self.label_9 = QLabel(self.keyboardButtonGB)
         self.label_9.setObjectName(u"label_9")
         self.label_9.setGeometry(QRect(40, 50, 52, 13))
+        self.includeWindowsButton = QCheckBox(self.keyboardButtonGB)
+        self.includeWindowsButton.setObjectName(u"includeWindowsButton")
+        self.includeWindowsButton.setGeometry(QRect(10, 140, 228, 17))
         self.pages.addWidget(self.editKeyboardButton)
-        self.editKeyboardHotkey = QWidget()
-        self.editKeyboardHotkey.setObjectName(u"editKeyboardHotkey")
-        self.keyboardHotkeyGB = QGroupBox(self.editKeyboardHotkey)
-        self.keyboardHotkeyGB.setObjectName(u"keyboardHotkeyGB")
-        self.keyboardHotkeyGB.setGeometry(QRect(0, 0, 361, 281))
-        self.keyboardHotkeySelection = QKeySequenceEdit(self.keyboardHotkeyGB)
-        self.keyboardHotkeySelection.setObjectName(u"keyboardHotkeySelection")
-        self.keyboardHotkeySelection.setGeometry(QRect(40, 80, 113, 20))
-        self.label_16 = QLabel(self.keyboardHotkeyGB)
-        self.label_16.setObjectName(u"label_16")
-        self.label_16.setGeometry(QRect(40, 50, 134, 13))
-        self.pages.addWidget(self.editKeyboardHotkey)
         self.editKeyboardWrite = QWidget()
         self.editKeyboardWrite.setObjectName(u"editKeyboardWrite")
         self.keyboardWriteGB = QGroupBox(self.editKeyboardWrite)
@@ -296,10 +282,12 @@ class Ui_Dialog(object):
         self.cutTimeLeft.setObjectName(u"cutTimeLeft")
         self.cutTimeLeft.setGeometry(QRect(10, 170, 62, 22))
         self.cutTimeLeft.setSingleStep(0.100000000000000)
+        self.cutTimeLeft.setValue(0.010000000000000)
         self.cutTimeRight = QDoubleSpinBox(self.RecordingGB)
         self.cutTimeRight.setObjectName(u"cutTimeRight")
         self.cutTimeRight.setGeometry(QRect(160, 170, 62, 22))
         self.cutTimeRight.setSingleStep(0.100000000000000)
+        self.cutTimeRight.setValue(0.010000000000000)
         self.replaySpeed = QDoubleSpinBox(self.RecordingGB)
         self.replaySpeed.setObjectName(u"replaySpeed")
         self.replaySpeed.setGeometry(QRect(160, 90, 62, 22))
@@ -348,22 +336,18 @@ class Ui_Dialog(object):
 
         self.verticalLayout_2.addWidget(self.label_13)
 
-        self.recordingHotkey = QKeySequenceEdit(self.hotkeys)
-        self.recordingHotkey.setObjectName(u"recordingHotkey")
-
-        self.verticalLayout_2.addWidget(self.recordingHotkey)
-
         self.label = QLabel(self.hotkeys)
         self.label.setObjectName(u"label")
 
         self.verticalLayout_2.addWidget(self.label)
 
-        self.previewHotkey = QKeySequenceEdit(self.hotkeys)
-        self.previewHotkey.setObjectName(u"previewHotkey")
-
-        self.verticalLayout_2.addWidget(self.previewHotkey)
-
         self.pages.addWidget(self.editRecording)
+        self.editNothing = QWidget()
+        self.editNothing.setObjectName(u"editNothing")
+        self.label_21 = QLabel(self.editNothing)
+        self.label_21.setObjectName(u"label_21")
+        self.label_21.setGeometry(QRect(110, 130, 141, 16))
+        self.pages.addWidget(self.editNothing)
         self.universalButtonsGroup = QGroupBox(Dialog)
         self.universalButtonsGroup.setObjectName(u"universalButtonsGroup")
         self.universalButtonsGroup.setGeometry(QRect(10, 279, 361, 41))
@@ -386,9 +370,8 @@ class Ui_Dialog(object):
 
 
         self.retranslateUi(Dialog)
-        self.cancel.clicked.connect(Dialog.reject)
 
-        self.pages.setCurrentIndex(10)
+        self.pages.setCurrentIndex(9)
 
 
         QMetaObject.connectSlotsByName(Dialog)
@@ -421,11 +404,12 @@ class Ui_Dialog(object):
         self.typeKeyClick.setText(QCoreApplication.translate("Dialog", u"Kliknij klawisz", None))
         self.typeKeyHold.setText(QCoreApplication.translate("Dialog", u"Przytrzymaj klawisz", None))
         self.typeKeyRelease.setText(QCoreApplication.translate("Dialog", u"Pu\u015b\u0107 klawisz", None))
-        self.keyboardButtonSelection.setInputMask("")
-        self.keyboardButtonSelection.setText("")
         self.label_9.setText(QCoreApplication.translate("Dialog", u"Co klikn\u0105\u0107?", None))
-        self.keyboardHotkeyGB.setTitle(QCoreApplication.translate("Dialog", u"Skr\u00f3t klawiszowy", None))
-        self.label_16.setText(QCoreApplication.translate("Dialog", u"Wprowad\u017a skr\u00f3t klawiszowy", None))
+#if QT_CONFIG(tooltip)
+        self.includeWindowsButton.setToolTip(QCoreApplication.translate("Dialog", u"Z pewnych powod\u00f3w, nie da si\u0119 wprowadzi\u0107 przycisku\n"
+"Windows w normalny spos\u00f3b do kombinacji klawiszy.", None))
+#endif // QT_CONFIG(tooltip)
+        self.includeWindowsButton.setText(QCoreApplication.translate("Dialog", u"Dodaj przycisk 'Windows' przed kombinacj\u0105", None))
         self.keyboardWriteGB.setTitle(QCoreApplication.translate("Dialog", u"Wypisywanie tekstu z klawiatury", None))
         self.waitMouseGB.setTitle(QCoreApplication.translate("Dialog", u"Opcje czekania na akcj\u0119 myszy", None))
         self.typeOfMouseAction.setItemText(0, QCoreApplication.translate("Dialog", u"Wci\u015bni\u0119cie przycisku myszy", None))
@@ -451,6 +435,7 @@ class Ui_Dialog(object):
         self.start.setText(QCoreApplication.translate("Dialog", u"Nagraj", None))
         self.preview.setText(QCoreApplication.translate("Dialog", u"Odtw\u00f3rz", None))
         self.label_10.setText(QCoreApplication.translate("Dialog", u"Przycinanie nagrania", None))
+        self.timeBase.setText(QCoreApplication.translate("Dialog", u"0", None))
         self.label_11.setText(QCoreApplication.translate("Dialog", u"D\u0142ugo\u015b\u0107 nagrania (s)", None))
         self.label_12.setText(QCoreApplication.translate("Dialog", u"Finalna d\u0142ugo\u015b\u0107 nagrania (s)", None))
         self.cutTimeLeft.setSuffix(QCoreApplication.translate("Dialog", u"s", None))
@@ -463,9 +448,8 @@ class Ui_Dialog(object):
         self.includeKeyboard.setText(QCoreApplication.translate("Dialog", u"Klawisze", None))
         self.hotkeys.setTitle(QCoreApplication.translate("Dialog", u"Skr\u00f3ty klawiszowe", None))
         self.label_13.setText(QCoreApplication.translate("Dialog", u"Skr\u00f3t do nagrywania", None))
-        self.recordingHotkey.setKeySequence(QCoreApplication.translate("Dialog", u"Ctrl+R", None))
         self.label.setText(QCoreApplication.translate("Dialog", u"Skr\u00f3t do podgl\u0105du", None))
-        self.previewHotkey.setKeySequence(QCoreApplication.translate("Dialog", u"Ctrl+P", None))
+        self.label_21.setText(QCoreApplication.translate("Dialog", u"Ta czynno\u015b\u0107 nie posiada opcji", None))
         self.universalButtonsGroup.setTitle("")
         self.save.setText(QCoreApplication.translate("Dialog", u"Zapisz", None))
 #if QT_CONFIG(tooltip)

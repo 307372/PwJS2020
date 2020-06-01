@@ -2,13 +2,17 @@
 hours = 0
 minutes = 0
 seconds = 0
-miliseconds = 1
+miliseconds = 10
 whichbutton = 0
-hotkey = `
+hotkey = Ctrl+Alt+Q
 clickuntilstopped = True
 clickntimes = False
 clickntimesn = 1
 
-[test]
-abc = efg
+[general]
+aborthotkey = Ctrl+Alt+B
+
+[recording]
+recordinghotkey = Ctrl+R
+previewhotkey = Ctrl+P
 

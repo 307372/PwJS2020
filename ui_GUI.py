@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUINJsqqE.ui'
+## Form generated from reading UI file 'GUIYKzUUf.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -83,7 +83,6 @@ class Ui_MainWindow(object):
         QTreeWidgetItem(__qtreewidgetitem1)
         QTreeWidgetItem(__qtreewidgetitem1)
         QTreeWidgetItem(__qtreewidgetitem1)
-        QTreeWidgetItem(__qtreewidgetitem1)
         __qtreewidgetitem2 = QTreeWidgetItem(self.creatorEditorActions)
         QTreeWidgetItem(__qtreewidgetitem2)
         QTreeWidgetItem(__qtreewidgetitem2)
@@ -144,7 +143,10 @@ class Ui_MainWindow(object):
         self.testButton_3.setGeometry(QRect(210, 400, 75, 23))
         self.label_10 = QLabel(self.creatorEditorGroup)
         self.label_10.setObjectName(u"label_10")
-        self.label_10.setGeometry(QRect(200, 350, 90, 13))
+        self.label_10.setGeometry(QRect(200, 290, 90, 13))
+        self.InspectRecordingButton = QPushButton(self.creatorEditorGroup)
+        self.InspectRecordingButton.setObjectName(u"InspectRecordingButton")
+        self.InspectRecordingButton.setGeometry(QRect(200, 340, 95, 23))
         self.tabs.addTab(self.creatorTab, "")
         self.autoclickerTab = QWidget()
         self.autoclickerTab.setObjectName(u"autoclickerTab")
@@ -218,9 +220,6 @@ class Ui_MainWindow(object):
         self.AC_WhichButton.addItem("")
         self.AC_WhichButton.setObjectName(u"AC_WhichButton")
         self.AC_WhichButton.setGeometry(QRect(20, 50, 71, 22))
-        self.AC_Hotkey = QKeySequenceEdit(self.groupBox)
-        self.AC_Hotkey.setObjectName(u"AC_Hotkey")
-        self.AC_Hotkey.setGeometry(QRect(20, 110, 113, 20))
         self.label_5 = QLabel(self.groupBox)
         self.label_5.setObjectName(u"label_5")
         self.label_5.setGeometry(QRect(20, 90, 81, 16))
@@ -240,6 +239,9 @@ class Ui_MainWindow(object):
         self.forceLoad = QPushButton(self.settingsTab)
         self.forceLoad.setObjectName(u"forceLoad")
         self.forceLoad.setGeometry(QRect(100, 440, 81, 23))
+        self.label_11 = QLabel(self.settingsTab)
+        self.label_11.setObjectName(u"label_11")
+        self.label_11.setGeometry(QRect(558, 10, 204, 13))
         self.tabs.addTab(self.settingsTab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -250,7 +252,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.creatorEditorActions.itemDoubleClicked.connect(self.creatorEditorAddToMacro.click)
 
-        self.tabs.setCurrentIndex(0)
+        self.tabs.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -292,29 +294,27 @@ class Ui_MainWindow(object):
         ___qtreewidgetitem9 = ___qtreewidgetitem8.child(0)
         ___qtreewidgetitem9.setText(0, QCoreApplication.translate("MainWindow", u"Kliknij klawisz", None));
         ___qtreewidgetitem10 = ___qtreewidgetitem8.child(1)
-        ___qtreewidgetitem10.setText(0, QCoreApplication.translate("MainWindow", u"U\u017cyj skr\u00f3tu klawiszowego", None));
+        ___qtreewidgetitem10.setText(0, QCoreApplication.translate("MainWindow", u"Przytrzymaj klawisz", None));
         ___qtreewidgetitem11 = ___qtreewidgetitem8.child(2)
-        ___qtreewidgetitem11.setText(0, QCoreApplication.translate("MainWindow", u"Przytrzymaj klawisz", None));
+        ___qtreewidgetitem11.setText(0, QCoreApplication.translate("MainWindow", u"Pu\u015b\u0107 klawisz", None));
         ___qtreewidgetitem12 = ___qtreewidgetitem8.child(3)
-        ___qtreewidgetitem12.setText(0, QCoreApplication.translate("MainWindow", u"Pu\u015b\u0107 klawisz", None));
+        ___qtreewidgetitem12.setText(0, QCoreApplication.translate("MainWindow", u"Wypisz tekst", None));
         ___qtreewidgetitem13 = ___qtreewidgetitem8.child(4)
-        ___qtreewidgetitem13.setText(0, QCoreApplication.translate("MainWindow", u"Wypisz tekst", None));
-        ___qtreewidgetitem14 = ___qtreewidgetitem8.child(5)
-        ___qtreewidgetitem14.setText(0, QCoreApplication.translate("MainWindow", u"Pu\u015b\u0107 wszystkie klawisze", None));
-        ___qtreewidgetitem15 = self.creatorEditorActions.topLevelItem(2)
-        ___qtreewidgetitem15.setText(0, QCoreApplication.translate("MainWindow", u"Logika", None));
-        ___qtreewidgetitem16 = ___qtreewidgetitem15.child(0)
-        ___qtreewidgetitem16.setText(0, QCoreApplication.translate("MainWindow", u"Czekaj na akcj\u0119 myszy", None));
-        ___qtreewidgetitem17 = ___qtreewidgetitem15.child(1)
-        ___qtreewidgetitem17.setText(0, QCoreApplication.translate("MainWindow", u"Czekaj na akcj\u0119 klawiatury", None));
-        ___qtreewidgetitem18 = ___qtreewidgetitem15.child(2)
-        ___qtreewidgetitem18.setText(0, QCoreApplication.translate("MainWindow", u"Czekaj N sekund", None));
-        ___qtreewidgetitem19 = ___qtreewidgetitem15.child(3)
-        ___qtreewidgetitem19.setText(0, QCoreApplication.translate("MainWindow", u"Wykonaj N razy", None));
-        ___qtreewidgetitem20 = self.creatorEditorActions.topLevelItem(3)
-        ___qtreewidgetitem20.setText(0, QCoreApplication.translate("MainWindow", u"Nagrane", None));
-        ___qtreewidgetitem21 = self.creatorEditorActions.topLevelItem(4)
-        ___qtreewidgetitem21.setText(0, QCoreApplication.translate("MainWindow", u"Makra", None));
+        ___qtreewidgetitem13.setText(0, QCoreApplication.translate("MainWindow", u"Pu\u015b\u0107 wszystkie klawisze", None));
+        ___qtreewidgetitem14 = self.creatorEditorActions.topLevelItem(2)
+        ___qtreewidgetitem14.setText(0, QCoreApplication.translate("MainWindow", u"Logika", None));
+        ___qtreewidgetitem15 = ___qtreewidgetitem14.child(0)
+        ___qtreewidgetitem15.setText(0, QCoreApplication.translate("MainWindow", u"Czekaj na akcj\u0119 myszy", None));
+        ___qtreewidgetitem16 = ___qtreewidgetitem14.child(1)
+        ___qtreewidgetitem16.setText(0, QCoreApplication.translate("MainWindow", u"Czekaj na akcj\u0119 klawiatury", None));
+        ___qtreewidgetitem17 = ___qtreewidgetitem14.child(2)
+        ___qtreewidgetitem17.setText(0, QCoreApplication.translate("MainWindow", u"Czekaj N sekund", None));
+        ___qtreewidgetitem18 = ___qtreewidgetitem14.child(3)
+        ___qtreewidgetitem18.setText(0, QCoreApplication.translate("MainWindow", u"Wykonaj N razy", None));
+        ___qtreewidgetitem19 = self.creatorEditorActions.topLevelItem(3)
+        ___qtreewidgetitem19.setText(0, QCoreApplication.translate("MainWindow", u"Nagrane", None));
+        ___qtreewidgetitem20 = self.creatorEditorActions.topLevelItem(4)
+        ___qtreewidgetitem20.setText(0, QCoreApplication.translate("MainWindow", u"Makra", None));
         self.creatorEditorActions.setSortingEnabled(__sortingEnabled)
 
         self.creatorEditorAddToMacro.setText(QCoreApplication.translate("MainWindow", u"Dodaj do makro", None))
@@ -330,6 +330,7 @@ class Ui_MainWindow(object):
         self.previewButton.setText(QCoreApplication.translate("MainWindow", u"Odtw\u00f3rz", None))
         self.testButton_3.setText(QCoreApplication.translate("MainWindow", u"SelectionTest", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"(przyciski testowe)", None))
+        self.InspectRecordingButton.setText(QCoreApplication.translate("MainWindow", u"Inspect Recording", None))
         self.tabs.setTabText(self.tabs.indexOf(self.creatorTab), QCoreApplication.translate("MainWindow", u"Kreator", None))
         self.AC_Time.setTitle(QCoreApplication.translate("MainWindow", u"Odst\u0119p czasowy mi\u0119dzy klikni\u0119ciami", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Milisekundy", None))
@@ -348,13 +349,13 @@ class Ui_MainWindow(object):
         self.AC_WhichButton.setItemText(1, QCoreApplication.translate("MainWindow", u"\u015arodkowy", None))
         self.AC_WhichButton.setItemText(2, QCoreApplication.translate("MainWindow", u"Prawy", None))
 
-        self.AC_Hotkey.setKeySequence(QCoreApplication.translate("MainWindow", u"Ctrl+Q", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Skr\u00f3t klawiszowy", None))
         self.tabs.setTabText(self.tabs.indexOf(self.autoclickerTab), QCoreApplication.translate("MainWindow", u"Autoclicker", None))
         self.settingsAutosave.setText(QCoreApplication.translate("MainWindow", u"Autozapis po ka\u017cdej zmianie", None))
         self.settingsDefault.setText(QCoreApplication.translate("MainWindow", u"Przywr\u00f3\u0107 domy\u015blne ustawienia", None))
         self.forceSave.setText(QCoreApplication.translate("MainWindow", u"Zapisz", None))
         self.forceLoad.setText(QCoreApplication.translate("MainWindow", u"Wczytaj", None))
+        self.label_11.setText(QCoreApplication.translate("MainWindow", u"Skr\u00f3t przerywaj\u0105cy wszystkie odtwarzania", None))
         self.tabs.setTabText(self.tabs.indexOf(self.settingsTab), QCoreApplication.translate("MainWindow", u"Ustawienia", None))
     # retranslateUi
 

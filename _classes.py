@@ -6,7 +6,8 @@ import time
 from mouse import ButtonEvent, WheelEvent, MoveEvent
 import mouse
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QStandardItem
+from PySide2.QtGui import QStandardItem, QKeySequence
+from PySide2.QtWidgets import QKeySequenceEdit
 
 
 class RecordingEvent:
@@ -28,6 +29,19 @@ class RecordingEvent:
         self.time = time
 
         self.prepareForPlaying()
+
+    def __str__(self):
+        return 'RE(event_type=' + str(self.event_type) + \
+               '\nname=' + str(self.name) + \
+               '\nlen(events)=' + str(len(self.events)) + \
+               '\nlen(events_included)=' + str(len(self.events_included)) + \
+               '\nlen(events_cut)=' + str(len(self.events_cut)) + \
+               '\nlen(events_final)=' + str(len(self.events_final)) + \
+               '\nspeed_factor=' + str(self.speed_factor) + \
+               '\ncutLeft=' + str(self.cutLeft) + \
+               '\ncutRight=' + str(self.cutRight) + ')'
+
+
 
     def prepareForPlaying(self):
         print('prepareForPlaying')
@@ -61,34 +75,60 @@ class RecordingEvent:
             if self.events_cut[0].time != 0:
                 self.events_final = []
                 t0 = 0
-
                 for event in self.events_cut:
 
-                    if isinstance( event, MoveEvent ) and self.include_moves:
-                        if t0 == 0:
-                            t0 = float(event.time)
-                        move = MoveEventV2( x=event.x, y=event.y, time=float(event.time - t0) )
-                        self.events_final.append( move )
+                    if isinstance( event, MoveEvent ):
+                        if self.include_moves:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            move = MoveEventV2( x=event.x, y=event.y, time=float(event.time - t0) )
+                            self.events_final.append( move )
 
-                    elif isinstance( event, ButtonEvent ) and self.include_clicks:
-                        if t0 == 0:
-                            t0 = float(event.time)
-                        button = ButtonEventV2( event_type=event.event_type, button=event.button, play_at=float(event.time - t0) )
-                        self.events_final.append( button )
+                    elif isinstance( event, MoveEventV2 ):
+                        if self.include_moves:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            copied_event = deepcopy( event )
+                            copied_event.time -= t0
+                            self.events_final.append( copied_event )
 
-                    elif isinstance( event, WheelEvent ) and self.include_wheel:
-                        if t0 == 0:
-                            t0 = float(event.time)
-                        wheel = WheelEventV2( delta=event.delta, time=float(event.time - t0) )
-                        self.events_final.append( wheel )
+                    elif isinstance( event, ButtonEvent ):
+                        if self.include_clicks:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            button = ButtonEventV2( event_type=event.event_type, button=event.button, play_at=float(event.time - t0) )
+                            self.events_final.append( button )
 
-                    elif isinstance( event, KeyboardEvent ) and self.include_keyboard:
-                        if t0 == 0:
-                            t0 = float(event.time)
-                        # event.time = float(event.time - t0)
-                        self.events_final.append( deepcopy(event) )
-                        self.events_final[-1].time -= t0
+                    elif isinstance( event, ButtonEventV2 ):
+                        if self.include_clicks:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            copied_event = deepcopy( event )
+                            copied_event.time -= t0
+                            self.events_final.append( copied_event )
 
+                    elif isinstance( event, WheelEvent ):
+                        if self.include_wheel:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            wheel = WheelEventV2( delta=event.delta, time=float(event.time - t0) )
+                            self.events_final.append( wheel )
+
+                    elif isinstance( event, WheelEventV2 ):
+                        if self.include_wheel:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            copied_event = deepcopy( event )
+                            copied_event.time -= t0
+                            self.events_final.append( copied_event )
+
+                    elif isinstance( event, KeyboardEvent ):
+                        if self.include_keyboard:
+                            if t0 == 0:
+                                t0 = float(event.time)
+                            # event.time = float(event.time - t0)
+                            self.events_final.append( deepcopy(event) )
+                            self.events_final[-1].time -= t0
                     else:
                         print( 'Nieznany typ eventu!' )
 
@@ -202,7 +242,8 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
         self.speed_factor = speed_factor
         self.hotkey = hotkey
 
-        self.macroThread = threading.Event()
+        self.macroThread = None
+        self.macroAbortEvent = threading.Event()
         self.isMacroRunning = False
         self.updateCheckState( self.active )
 
@@ -242,17 +283,27 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
     def macroPrep(self):
         if not self.isMacroRunning:
             self.isMacroRunning = True
-            thread = threading.Thread(target=self.macroStart)
-            thread.start()
+            self.macroThread = threading.Thread(target=self.macroStart)
+            self.macroThread.start()
+        else:
+            self.macroStop()
 
     def macroStart(self):
         begin = time.time()
-        self.macroPlay( self.macro_editor_items_list, self.speed_factor )
+        self.macroAbortEvent = threading.Event()
+        x = self.macroPlay( self.macro_editor_items_list, self.speed_factor )
+        if isinstance( x, str ):
+            print( 'Macro aborted.' )
+        self.isMacroRunning = False
         print( 'total duration:', time.time() - begin )
+
+    def macroStop(self):
+        print( 'macroStop' )
+        self.isMacroRunning = False
+        self.macroAbortEvent.set()
 
     def macroPlay( self, target, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
         timedelta = time.time()
-        self.macroThread = threading.Event()
         state = keyboard.stash_state()
         # recording_events_time = 0
         wait_events_duration = 0
@@ -268,8 +319,9 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                 real_wait_time = target_time - time.time()
                 # print( 'theory:', theoretical_wait_time, ' reality:', real_wait_time, ' total:', event.time )
                 if real_wait_time > 0:
-                    if self.macroThread.wait(timeout=real_wait_time):
-                        break
+                    if self.macroAbortEvent.wait(timeout=real_wait_time):
+                        keyboard.stash_state()
+                        return 'abort'
                 # recording_events_time = 0
                 t0 += theoretical_wait_time
                 last_time = event.time
@@ -288,13 +340,13 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                 else:
                     print('Nieznany typ eventu myszy')
             elif isinstance(event, KeyboardEvent) and include_keyboard:
-                key = event.scan_code or event.name
+                key = event.name or event.scan_code
                 if event.event_type == keyboard.KEY_DOWN:
                     keyboard.press(key)
                 elif event.event_type == keyboard.KEY_UP:
                     keyboard.release(key)
                 elif event.event_type == 'write':
-                    keyboard.write(event.scan_code)  # do testu musi być nadpisany tekstem!
+                    writeGoodEnough(event.scan_code)  # do testu musi być nadpisany tekstem!
                 elif event.event_type == 'click':
                     keyboard.press_and_release(key)
                 elif event.event_type == 'hotkey':
@@ -319,29 +371,24 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                 else:
                     print('Nieznany typ eventu oczekiwania')
             elif isinstance(event, RecordingEvent):
-                #begin = time.time()
-                # print( event.speed_factor )
-                # print( event.events_final )
-                self.playRecording(event.events_final, event.speed_factor * self.speed_factor, event.include_clicks, event.include_moves, event.include_wheel, event.include_keyboard)
-                #for_events_duration += time.time() - begin
+                x = self.playRecording(event.events_final, event.speed_factor * speed_factor, event.include_clicks, event.include_moves, event.include_wheel, event.include_keyboard)
+                if isinstance( x, str ):
+                    return 'abort'
 
             elif isinstance(event, ForEvent):  # PSUJE CZASY? CHYBA NIE, DO TESTU
                 before = time.time()
                 for i in range(event.times):
-                    self.macroPlay(event.event_list, speed_factor, include_clicks, include_moves, include_wheel,
-                                   include_keyboard)
+                    x = self.macroPlay(event.event_list, speed_factor, include_clicks, include_moves, include_wheel, include_keyboard)
+                    if isinstance( x, str ):
+                        return 'abort'
                     time.sleep(0.0025/speed_factor)           # PAMIĘTAJ O TYM, JEŚLI CZAS PRZESTANIE SIĘ ZGADZAC
                 for_events_duration += time.time() - before
             elif isinstance(event, PlaceholderEvent):
                 pass
             else:
                 print('Nieznany typ eventu', event)
-        self.isMacroRunning = False
         keyboard.restore_modifiers(state)
         keyboard.release(self.hotkey)
-        # print(time.time() - timedelta)
-
-        # print("MTI_macroPlay")
 
     def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
         timedelta = time.time()
@@ -354,8 +401,10 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                 target_time = t0 + (event.time - last_time) / speed_factor
                 real_wait_time = target_time - time.time()
                 if real_wait_time > 0:
-                    if self.macroThread.wait(timeout=real_wait_time):
-                        break
+                    if self.macroAbortEvent.wait(timeout=real_wait_time):
+                        keyboard.stash_state()
+                        return 'abort'
+
                 t0 = target_time
                 last_time = event.time
             if isinstance(event, MoveEventV2) and include_moves:
@@ -390,3 +439,35 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
 
     def __reduce__(self):
         return (self.__class__, ( self.macro_editor_items_list, self.text(), None, None, None, self.speed_factor, self.hotkey ) )
+
+
+class SingleKeySequenceEdit(QKeySequenceEdit):
+    def __init__(self, parent=None):
+        super(SingleKeySequenceEdit, self).__init__(parent)
+
+    def keyPressEvent(self, QKeyEvent):
+        super(SingleKeySequenceEdit, self).keyPressEvent(QKeyEvent)
+        value = self.keySequence()
+        self.setKeySequence(QKeySequence(value))
+        self.keySequenceChanged.emit(value)
+        self.editingFinished.emit()
+
+
+def writeGoodEnough(text, delay=0, restore_state_after=True):
+    # Moja wersja keyboard.write. Autor znowu nie przetestował dobrze swojej biblioteki (kompatybilna prawdopodobnie tylko z windowsem)
+    # Przy delay < 0.00125 program (u mnie) kończy wysyłać sygnały do buforu klawiatury szybciej,
+    # niż są one wypisywane (przepełnienie buforu przy długim tekście, desynchronizacja czasu w makro)
+    state = keyboard.stash_state()
+    if delay < 0.00125:
+        delay = 0.00125
+
+    for letter in text:
+        if letter in '\n\b':
+            keyboard.send(letter)
+            time.sleep(delay)
+        else:
+            keyboard._os_keyboard.type_unicode(letter)
+            time.sleep(delay)
+
+    if restore_state_after:
+        keyboard.restore_modifiers(state)

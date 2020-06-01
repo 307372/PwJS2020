@@ -2,7 +2,7 @@ import keyboard
 from mouse import ButtonEvent, WheelEvent, MoveEvent
 from _classes import RecordingEvent, MoveEventV2, WheelEventV2
 from PySide2.QtGui import QKeySequence
-
+from PySide2.QtCore import Qt, QSignalBlocker
 
 
 class OpeningAndSaving:
@@ -36,7 +36,8 @@ class OpeningAndSaving:
 
             elif event_type == 'KeyboardEvent':
                 if event.event_type == 'releaseall':
-                    print(event.event_type, 'id=None')
+                    self.creatorSelectEditorPageByID(10)
+                    print(event.event_type, 'id=10')
 
                 elif event.event_type == 'up' or event.event_type == 'down' or event.event_type == 'click':
                     print(event.event_type, 'id=3')
@@ -44,60 +45,58 @@ class OpeningAndSaving:
                     print('Edition implemented')
                     self.openInEditorKeyboardButton()
 
-                elif event.event_type == 'hotkey':
+                elif event.event_type == 'write':
                     print(event.event_type, 'id=4')
                     self.creatorSelectEditorPageByID(4)
-                    print('Edition implemented')
-                    self.openInEditorKeyboardHotkey()
-
-                elif event.event_type == 'write':
-                    print(event.event_type, 'id=5')
-                    self.creatorSelectEditorPageByID(5)
                     print('Edition implemented')
                     self.openInEditorKeyboardWrite()
 
                 else:
+                    self.creatorSelectEditorPageByID(10)
                     print('Nieznany typ KeyboardEventu!', event.event_type)
 
             elif event_type == 'WaitEvent':
                 if event.event_type == 'mouse':
-                    print(event.event_type, 'id=6')
-                    self.creatorSelectEditorPageByID(6)
+                    print(event.event_type, 'id=5')
+                    self.creatorSelectEditorPageByID(5)
                     print('Edition implemented')
                     self.openInEditorWaitMouse()
 
                 elif event.event_type == 'keyboard':
-                    print(event.event_type, 'id=7')
-                    self.creatorSelectEditorPageByID(7)
+                    print(event.event_type, 'id=6')
+                    self.creatorSelectEditorPageByID(6)
                     print('Edition implemented')
                     self.openInEditorWaitKeyboard()
 
                 elif event.event_type == 'nseconds':
-                    print(event.event_type, 'id=8')
-                    self.creatorSelectEditorPageByID(8)
+                    print(event.event_type, 'id=7')
+                    self.creatorSelectEditorPageByID(7)
                     print('Edition implemented')
                     self.openInEditorWaitNSeconds()
 
                 else:
+                    self.creatorSelectEditorPageByID(10)
                     print('Nieznany typ WaitEventu', event.event_type)
 
             elif event_type == 'ForEvent':
-                print(event_type, 'id=9')
-                self.creatorSelectEditorPageByID(9)
+                print(event_type, 'id=8')
+                self.creatorSelectEditorPageByID(8)
                 print('Edition implemented')
                 self.openInEditorForLoop()
 
             elif event_type == 'RecordingEvent':
-                print(event_type, 'id=10')
+                print(event_type, 'id=9')
                 self.recordDialog.addToActions.setDisabled(False)
-                self.creatorSelectEditorPageByID(10)
+                self.creatorSelectEditorPageByID(9)
                 print( 'Edition implemented' )
                 self.openInEditorRecording()
 
             elif event_type == 'PlaceholderEvent':
-                print(event_type, 'id=None')
+                print(event_type, 'id=10')
+                self.creatorSelectEditorPageByID(10)
 
             else:
+                self.creatorSelectEditorPageByID(10)
                 print('W ogóle nieznany typ eventu!', event_type)
             self.creatorRecordDisplay()
 
@@ -151,14 +150,27 @@ class OpeningAndSaving:
             self.recordDialog.typeKeyRelease.setChecked(True)
         else:
             print("Cos poszlo nie tak! Nieznany event type", action.event_type)
-        self.recordDialog.keyboardButtonSelection.setText( self.currentlyEditedItem.action.name )
+        has_windows = False
+        combination = action.name
+        if combination:
+            if 'indows' in combination:
+                has_windows = True
+                combination = combination.split('+')
+                if len(combination) > 1:
+                    combination = '+'.join(combination[1:])
+                else:
+                    combination = ''
 
-    def openInEditorKeyboardHotkey(self):
-        if self.currentlyEditedItem.action.name is not None:
-            self.recordDialog.keyboardHotkeySelection.setKeySequence( self.currentlyEditedItem.action.name )
+        self.recordDialog.keyboardButtonSelection.setKeySequence( QKeySequence().fromString(combination) )
+        self.recordDialog.includeWindowsButton.setChecked( has_windows )
 
     def openInEditorKeyboardWrite(self):
-        self.recordDialog.keyboardWriteTextfield.setPlainText( self.currentlyEditedItem.action.name )
+        text = self.currentlyEditedItem.action.scan_code
+        if isinstance( text, str ):
+            self.recordDialog.keyboardWriteTextfield.setPlainText( text )
+        else:
+            self.recordDialog.keyboardWriteTextfield.setPlainText( '' )
+        print( self.currentlyEditedItem.action.scan_code )
 
     def openInEditorWaitMouse(self):
         print( self.currentlyEditedItem.action )
@@ -198,11 +210,21 @@ class OpeningAndSaving:
         self.recordDialog.forLoopTimes.setValue( self.currentlyEditedItem.action.times )
 
     def openInEditorRecording(self):
-        # print( self.ui.creatorEditorActions.selectedItems()[0].text(0) )
 
         recording_event = self.currentlyEditedItem.action
+        self.recorded = recording_event.events
         self.recordDialog.name.setText( recording_event.name )
         self.recordedObject = recording_event
+
+        if self.recordedObject.events != []:
+            self.recordDialog.timeBase.setText(str("%.2f" % (self.recordedObject.events[-1].time - self.recordedObject.events[0].time ) ) )
+            block_left = QSignalBlocker( self.recordDialog.cutTimeLeft )
+            self.recordDialog.cutTimeLeft.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
+            block_left.unblock()
+            block_right = QSignalBlocker( self.recordDialog.cutTimeRight )
+            self.recordDialog.cutTimeRight.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
+            block_left.unblock()
+
         self.recordDialog.replaySpeed.setValue( recording_event.speed_factor )
         self.recordDialog.cutTimeLeft.setValue( recording_event.cutLeft )
         self.recordDialog.cutTimeRight.setValue( recording_event.cutRight )
@@ -214,7 +236,6 @@ class OpeningAndSaving:
         self.creatorRecordUpdateTimeAndCuts()
 
     def saveEditedItem(self):
-
         if self.currentlyEditedItem is not None:
             page = self.recordDialog.pages.currentIndex()
             if page == 0:  # mouseMovement
@@ -237,40 +258,37 @@ class OpeningAndSaving:
                 print('Saving implemented')
                 self.editorSaveKeyboardButton()
 
-            elif page == 4:  # keyboardHotkey
+            elif page == 4:  # keyboardWrite
                 print(page, 'id=4')
-                print('Saving implemented (?)')
-                self.editorSaveKeyboardHotkey()
-
-            elif page == 5:  # keyboardWrite
-                print(page, 'id=5')
-                print('Saving implemented (?)')
+                print('Saving implemented')
                 self.editorSaveKeyboardWrite()
 
-            elif page == 6:  # waitMouse
-                print(page, 'id=6')
+            elif page == 5:  # waitMouse
+                print(page, 'id=5')
                 print('Saving implemented')
                 self.editorSaveWaitMouse()
 
-            elif page == 7:  # waitKeyboard
-                print(page, 'id=7')
+            elif page == 6:  # waitKeyboard
+                print(page, 'id=6')
                 print('Saving implemented')
                 self.editorSaveWaitKeyboard()
 
-            elif page == 8:  # wait N seconds
-                print(page, 'id=8')
+            elif page == 7:  # wait N seconds
+                print(page, 'id=7')
                 print('Saving implemented')
                 self.editorSaveWaitNSeconds()
 
-            elif page == 9:  # forLoop
-                print(page, 'id=9')
+            elif page == 8:  # forLoop
+                print(page, 'id=8')
                 print('Saving implemented')
                 self.editorSaveForLoop()
 
-            elif page == 10:  # recording
-                print(page, 'id=10')
-                print('Saving not fully implemented')
+            elif page == 9:  # recording
+                print(page, 'id=9')
+                print('Saving implemented')
                 self.editorSaveRecording()
+            elif page == 10:  # nothing
+                print( 'Nie ma czego zapisywać' )
             else:
                 print('Nieznana strona! id =', page)
             self.macroUpdateTime()
@@ -340,28 +358,32 @@ class OpeningAndSaving:
         text = ''
         if self.recordDialog.typeKeyClick.isChecked():
             self.currentlyEditedItem.action.event_type = 'click'
-            text = 'Kliknij klawisz '
+            text = 'Kliknij '
 
         elif self.recordDialog.typeKeyHold.isChecked():
             self.currentlyEditedItem.action.event_type = 'down'
-            text = 'Przytrzymaj klawisz '
+            text = 'Przytrzymaj '
 
         elif self.recordDialog.typeKeyRelease.isChecked():
             self.currentlyEditedItem.action.event_type = 'up'
-            text = 'Puść klawisz '
+            text = 'Puść '
 
-        if self.recordDialog.keyboardButtonSelection.text() != '':
+        has_windows = self.recordDialog.includeWindowsButton.isChecked()
+
+        if self.recordDialog.keyboardButtonSelection.keySequence().toString() != '' or has_windows:
             self.currentlyEditedItem.action.scan_code = None
-            self.currentlyEditedItem.action.name = keyboard.normalize_name(self.recordDialog.keyboardButtonSelection.text())
-            text += self.recordDialog.keyboardButtonSelection.text()
+            self.currentlyEditedItem.action.name = self.recordDialog.keyboardButtonSelection.keySequence().toString().lower()
+            if has_windows:
+                if self.recordDialog.keyboardButtonSelection.keySequence().toString() != '':
+                    self.currentlyEditedItem.action.name = 'windows+' + str(self.currentlyEditedItem.action.name)
+                    text += 'Windows+'
+                else:
+                    self.currentlyEditedItem.action.name = 'windows'
+                    text += 'Windows'
+            text += self.recordDialog.keyboardButtonSelection.keySequence().toString()
+        else:
+            text += 'klawisz'
         self.currentlyEditedItem.setText( text )
-
-    def editorSaveKeyboardHotkey(self):
-        self.currentlyEditedItem.action.name = self.recordDialog.keyboardHotkeySelection.keySequence().toString()
-        text = "Użyj skrótu klawiszowego " + self.recordDialog.keyboardHotkeySelection.keySequence().toString()
-        self.currentlyEditedItem.setText( text )
-        print(self.currentlyEditedItem.action.name)
-        print(self.currentlyEditedItem.action)
 
     def editorSaveKeyboardWrite(self):
         self.currentlyEditedItem.action.scan_code = self.recordDialog.keyboardWriteTextfield.toPlainText()

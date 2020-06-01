@@ -39,7 +39,7 @@
      <enum>Qt::ClickFocus</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="macroTab">
      <attribute name="title">
@@ -238,11 +238,6 @@
         <item>
          <property name="text">
           <string>Kliknij klawisz</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Użyj skrótu klawiszowego</string>
          </property>
         </item>
         <item>
@@ -497,13 +492,26 @@
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>350</y>
+         <y>290</y>
          <width>90</width>
          <height>13</height>
         </rect>
        </property>
        <property name="text">
         <string>(przyciski testowe)</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="InspectRecordingButton">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>340</y>
+         <width>95</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Inspect Recording</string>
        </property>
       </widget>
      </widget>
@@ -785,19 +793,6 @@
         </property>
        </item>
       </widget>
-      <widget class="QKeySequenceEdit" name="AC_Hotkey">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>110</y>
-         <width>113</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="keySequence">
-        <string>Ctrl+Q</string>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_5">
        <property name="geometry">
         <rect>
@@ -870,6 +865,19 @@
       </property>
       <property name="text">
        <string>Wczytaj</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>558</x>
+        <y>10</y>
+        <width>204</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Skrót przerywający wszystkie odtwarzania</string>
       </property>
      </widget>
     </widget>

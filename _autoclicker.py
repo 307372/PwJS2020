@@ -53,7 +53,8 @@ class AutoclickerMethods:
             self.AC_Hotkey = hotkey
         else:
             print("autoclickerHotkeyChange ''")
-            keyboard.remove_hotkey(self.AC_Hotkey)
+            if self.AC_Hotkey != '':
+                keyboard.remove_hotkey(self.AC_Hotkey)
             self.AC_Hotkey = hotkey
 
     def AC_MouseButtonUpdate(self):  # biblioteka mouse wymaga poniższych nazw

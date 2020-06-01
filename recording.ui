@@ -29,7 +29,7 @@
     </size>
    </property>
    <property name="currentIndex">
-    <number>10</number>
+    <number>9</number>
    </property>
    <widget class="QWidget" name="editMouseMovement">
     <widget class="QGroupBox" name="mouseMovementGB">
@@ -359,28 +359,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QLineEdit" name="keyboardButtonSelection">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>70</y>
-        <width>113</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="inputMask">
-       <string/>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="maxLength">
-       <number>1</number>
-      </property>
-      <property name="cursorPosition">
-       <number>0</number>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
@@ -394,42 +372,21 @@
        <string>Co kliknąć?</string>
       </property>
      </widget>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="editKeyboardHotkey">
-    <widget class="QGroupBox" name="keyboardHotkeyGB">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>361</width>
-       <height>281</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Skrót klawiszowy</string>
-     </property>
-     <widget class="QKeySequenceEdit" name="keyboardHotkeySelection">
+     <widget class="QCheckBox" name="includeWindowsButton">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>80</y>
-        <width>113</width>
-        <height>20</height>
+        <x>10</x>
+        <y>140</y>
+        <width>228</width>
+        <height>17</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QLabel" name="label_16">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>50</y>
-        <width>134</width>
-        <height>13</height>
-       </rect>
+      <property name="toolTip">
+       <string>Z pewnych powodów, nie da się wprowadzić przycisku
+Windows w normalny sposób do kombinacji klawiszy.</string>
       </property>
       <property name="text">
-       <string>Wprowadź skrót klawiszowy</string>
+       <string>Dodaj przycisk 'Windows' przed kombinacją</string>
       </property>
      </widget>
     </widget>
@@ -833,6 +790,9 @@
         <height>20</height>
        </rect>
       </property>
+      <property name="text">
+       <string>0</string>
+      </property>
       <property name="readOnly">
        <bool>true</bool>
       </property>
@@ -891,6 +851,9 @@
       <property name="singleStep">
        <double>0.100000000000000</double>
       </property>
+      <property name="value">
+       <double>0.010000000000000</double>
+      </property>
      </widget>
      <widget class="QDoubleSpinBox" name="cutTimeRight">
       <property name="geometry">
@@ -906,6 +869,9 @@
       </property>
       <property name="singleStep">
        <double>0.100000000000000</double>
+      </property>
+      <property name="value">
+       <double>0.010000000000000</double>
       </property>
      </widget>
      <widget class="QDoubleSpinBox" name="replaySpeed">
@@ -1017,27 +983,28 @@
        </widget>
       </item>
       <item>
-       <widget class="QKeySequenceEdit" name="recordingHotkey">
-        <property name="keySequence">
-         <string>Ctrl+R</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Skrót do podglądu</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QKeySequenceEdit" name="previewHotkey">
-        <property name="keySequence">
-         <string>Ctrl+P</string>
-        </property>
-       </widget>
-      </item>
      </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="editNothing">
+    <widget class="QLabel" name="label_21">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>130</y>
+       <width>141</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Ta czynność nie posiada opcji</string>
+     </property>
     </widget>
    </widget>
   </widget>
@@ -1082,22 +1049,5 @@
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>cancel</sender>
-   <signal>clicked()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>310</x>
-     <y>301</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>100</x>
-     <y>0</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

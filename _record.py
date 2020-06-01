@@ -11,19 +11,23 @@ from _classes import RecordingEvent, MoveEventV2, ButtonEventV2, WheelEventV2
 from PySide2.QtWidgets import QMessageBox, QTreeWidgetItem
 from PySide2.QtCore import QSignalBlocker
 
+
 class RecordMethods:
     def pickleRecordings(self):
+        print( 'pickleRecordings' )
         # print( [self.recordDialog.name.text().replace(' ', '_')] )
         with open("recordedActions.pickle", "wb") as pickle_out:  # wb - write bytes
             pickle.dump(self.recordsDict, pickle_out)
 
     def unpickleRecordings(self):
+        print( 'unpickleRecordings' )
         with open( "recordedActions.pickle", "rb") as pickle_in:  # rb - read bytes
             self.recordsDict = pickle.load( pickle_in )
             for key in self.recordsDict:
                 QTreeWidgetItem(self.ui.creatorEditorActions.topLevelItem(3), [key])
 
     def creatorRecordDisplay(self):
+        print( 'creatorRecordDisplay' )
         if not self.isDialogOpen:
             self.isDialogOpen = True
             self.dialog.move(self.x() + 793, self.y())
@@ -31,6 +35,7 @@ class RecordMethods:
             self.dialog.exec_()
 
     def creatorRecordStart(self):
+        print( 'creatorRecordStart' )
         if not self.isRecordingRunning:
             self.isRecordingRunning = True
             self.recordDialog.start.setText("Stop")
@@ -57,6 +62,7 @@ class RecordMethods:
             self.creatorRecordUpdateTimeAndCuts()
 
     def creatorRecordToggle(self):
+        print( 'creatorRecordToggle' )
         if not self.isRecordingRunning and not self.isMacroRunning:
             self.creatorRecordStart()
         else:
@@ -85,23 +91,26 @@ class RecordMethods:
             self.creatorRecordHotkey = hotkey
         else:
             print("cretorRecordHotkeyChange ''")
-            keyboard.remove_hotkey( self.creatorRecordHotkey )
+            if self.creatorRecordHotkey != '':
+                keyboard.remove_hotkey( self.creatorRecordHotkey )
             self.creatorRecordHotkey = hotkey
 
     def creatorPreviewHotkeyChange(self):
         hotkey = self.recordDialog.previewHotkey.keySequence().toString()
         if hotkey != '':
             print("creatorPreviewHotkeyChange", hotkey)
-            if self.creatorRecordHotkey != '':
+            if self.creatorPreviewHotkey != '':
                 keyboard.remove_hotkey(self.creatorPreviewHotkey)
             keyboard.add_hotkey(hotkey, self.creatorRecordPreviewToggle)
             self.creatorPreviewHotkey = hotkey
         else:
             print("cretorRecordHotkeyChange ''")
-            keyboard.remove_hotkey(self.creatorRecordHotkey)
-            self.creatorRecordHotkey = hotkey
+            if self.creatorPreviewHotkey != '':
+                keyboard.remove_hotkey(self.creatorPreviewHotkey)
+            self.creatorPreviewHotkey = hotkey
 
-    def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
+    def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True,
+                      include_keyboard=True):
         timedelta = time.time()
         state = keyboard.stash_state()
         t0 = time.time()
@@ -112,8 +121,10 @@ class RecordMethods:
                 target_time = t0 + (event.time - last_time) / speed_factor
                 real_wait_time = target_time - time.time()
                 if real_wait_time > 0:
-                    if self.macroThread.wait(timeout=real_wait_time):
-                        break
+                    if self.macroAbortEvent.wait(timeout=real_wait_time):
+                        keyboard.stash_state()
+                        return 'abort'
+
                 t0 = target_time
                 last_time = event.time
             if isinstance(event, MoveEventV2) and include_moves:
@@ -129,8 +140,6 @@ class RecordMethods:
             elif isinstance(event, WheelEventV2) and include_wheel:
                 mouse.wheel(event.delta)
         keyboard.restore_modifiers(state)
-        keyboard.release(self.recordDialog.recordingHotkey.keySequence().toString())
-        keyboard.release(self.recordDialog.previewHotkey.keySequence().toString())
         print(time.time() - timedelta)
         print("playRecording")
 
@@ -170,13 +179,16 @@ class RecordMethods:
                 mouse.wheel(event.delta)
         self.isMacroRunning = False
         keyboard.restore_modifiers(state)
-        keyboard.release( self.recordDialog.recordingHotkey.keySequence().toString() )
-        keyboard.release( self.recordDialog.previewHotkey.keySequence().toString() )
+        if self.recordDialog.recordingHotkey.keySequence().toString() != '':
+            keyboard.release( self.recordDialog.recordingHotkey.keySequence().toString() )
+        if self.recordDialog.previewHotkey.keySequence().toString() != '':
+            keyboard.release( self.recordDialog.previewHotkey.keySequence().toString() )
         print( time.time() - timedelta )
 
     def creatorRecordPreviewPrep(self):
         print('creatorRecordPreviewPrep')
         if self.recorded != []:
+            print( 'self.recorded is not empty!' )
             self.recordedObject = RecordingEvent(name=self.recordDialog.name.text(),
                                                  cut_left=self.recordDialog.cutTimeLeft.value(),
                                                  cut_right=self.recordDialog.cutTimeRight.value(),
@@ -191,10 +203,13 @@ class RecordMethods:
             # self.creatorRecordFinalEdit()
             thread = threading.Thread(target=lambda: self.creatorRecordPreviewStart(speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked() ))
             thread.start()
+        else:
+            print( 'self.recorded is empty!' )
+            print( self.recorded )
 
     def creatorRecordPreviewStop(self):
         print('creatorRecordPreviewStop')
-        self.macroThread.set()
+        self.macroAbortEvent.set()
         self.isMacroRunning = False
 
     def creatorRecordPreviewToggle(self):
@@ -205,6 +220,7 @@ class RecordMethods:
             self.creatorRecordPreviewStop()
 
     def creatorRecordOverwriteConfirmation(self):
+        print( 'creatorRecordOverwriteConfirmation' )
         msg = QMessageBox()
         msg.setWindowTitle("Nagranie o tej nazwie już istnieje!")
         msg.setText("Czy na pewno chcesz zapisać to nagranie pod tą nazwą?")
@@ -216,6 +232,7 @@ class RecordMethods:
         x = msg.exec_()
 
     def creatorRecordOverwriteConfirmed(self, i):
+        print( 'creatorRecordOverwriteConfirmed' )
         if i.text() == 'OK':
             self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recordedObject.events, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
             self.pickleRecordings()
@@ -232,47 +249,66 @@ class RecordMethods:
                 self.pickleRecordings()
 
     def creatorRecordRightSliderSpinBoxSync(self):  # Slider changes value => SpinBox value is changed
+        print( 'creatorRecordRightSliderSpinBoxSync' )
         if self.recordDialog.timeBase.text() != '':
             value = self.recordDialog.cutSliderRight.value() / 1000 * float( self.recordDialog.timeBase.text() )
+
             blocker = QSignalBlocker( self.recordDialog.cutTimeRight )
             self.recordDialog.cutTimeRight.setValue( value )
             blocker.unblock()
+
             self.recordedObject.cutRight = self.recordDialog.cutTimeRight.value()
             self.recordedObject.cutRecording()
             self.creatorRecordTimeFinalUpdate()
 
     def creatorRecordRightSpinBoxSliderSync(self):  # SpinBox changes value => Slider value is changed
+        print( 'creatorRecordRightSpinBoxSliderSync' )
         if self.recordDialog.timeBase.text() != '':
-            value = round( self.recordDialog.cutTimeRight.value() / float( self.recordDialog.timeBase.text() ) * 1000 )
+            base_time = float( self.recordDialog.timeBase.text() )
+            if base_time != 0:
+                value = round( self.recordDialog.cutTimeRight.value() / base_time * 1000 )
+            else:
+                value = 0
+
             blocker = QSignalBlocker( self.recordDialog.cutSliderRight )
             self.recordDialog.cutSliderRight.setValue( value )
             blocker.unblock()
+
             self.recordedObject.cutRight = self.recordDialog.cutTimeRight.value()
             self.recordedObject.cutRecording()
             self.creatorRecordTimeFinalUpdate()
 
     def creatorRecordLeftSliderSpinBoxSync(self):  # Slider changes value => SpinBox value is changed
+        print( 'creatorRecordLeftSliderSpinBoxSync' )
         if self.recordDialog.timeBase.text() != '':
             value = self.recordDialog.cutSliderLeft.value() / 1000 * float( self.recordDialog.timeBase.text() )
+
             blocker = QSignalBlocker(self.recordDialog.cutTimeLeft)
             self.recordDialog.cutTimeLeft.setValue( value )
             blocker.unblock()
+
             self.recordedObject.cutLeft = self.recordDialog.cutTimeLeft.value()
             self.recordedObject.cutRecording()
             self.creatorRecordTimeFinalUpdate()
 
     def creatorRecordLeftSpinBoxSliderSync(self):  # SpinBox changes value => Slider value is changed
+        print('creatorRecordLeftSpinBoxSliderSync')
         if self.recordDialog.timeBase.text() != '':
-            value = round( self.recordDialog.cutTimeLeft.value() / float( self.recordDialog.timeBase.text() ) * 1000 )
+            base_time = float( self.recordDialog.timeBase.text() )
+            if base_time != 0:
+                value = round( self.recordDialog.cutTimeLeft.value() / base_time * 1000 )
+            else:
+                value = 0
+
             blocker = QSignalBlocker( self.recordDialog.cutSliderLeft )
             self.recordDialog.cutSliderLeft.setValue( value )
             self.recordedObject.cutLeft = self.recordDialog.cutTimeLeft.value()
             blocker.unblock()
+
             self.recordedObject.cutRecording()
             self.creatorRecordTimeFinalUpdate()
 
     def creatorRecordTimeFinalUpdate(self):
-
         if self.recordedObject.events_final != []:
             print('creatorRecordTimeFinalUpdate')
             self.recordDialog.timeFinal.setText( str( "%.2f" % self.recordedObject.events_final[-1].time ))   # ( ( self.recordedCut[-1].time - self.recordedCut[0].time ) * self.recordDialog.replaySpeed.value() )))
