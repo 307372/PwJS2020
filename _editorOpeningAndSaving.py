@@ -13,9 +13,8 @@ class OpeningAndSaving:
             self.currentlyEditedItem = self.treeModel.itemFromIndex(self.ui.creatorEditorTreeView.selectedIndexes()[0])
             event = self.treeModel.itemFromIndex(indexes[0]).action
             self.recordDialog.addToActions.setDisabled(True)
+            self.recordDialog.save.setDisabled(False)
             event_type = type(event).__name__
-            # print( event_type )
-            # TUTAJ DAC RZECZY self.recordDialog.addToActions.
             if event_type in ['MoveEvent', 'MoveEventV2']:
                 print(event_type, 'id=0')
                 self.creatorSelectEditorPageByID(0)
@@ -223,7 +222,9 @@ class OpeningAndSaving:
             block_left.unblock()
             block_right = QSignalBlocker( self.recordDialog.cutTimeRight )
             self.recordDialog.cutTimeRight.setMaximum((self.recordedObject.events[-1].time - self.recordedObject.events[0].time) / 2)
-            block_left.unblock()
+            block_right.unblock()
+        else:
+            print( 'self.recordedObject.events == []' )
 
         self.recordDialog.replaySpeed.setValue( recording_event.speed_factor )
         self.recordDialog.cutTimeLeft.setValue( recording_event.cutLeft )

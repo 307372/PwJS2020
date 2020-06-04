@@ -228,11 +228,17 @@ class WaitEvent:
 
 
 class MacroTreeviewItem(QStandardItem):  # MTvI
-    def __init__(self, macro_editor_items_list, name, item_duration, item_hotkey, item_speed, speed_factor=1.0, hotkey='' ):
+    def __init__(self, macro_editor_items_list, name, item_duration, item_hotkey, item_speed, speed_factor=1.0, hotkey='', is_active=None ):
         super().__init__(name)
+        self.last_known_name = name
         self.setCheckable( True )
-        self.setCheckState( Qt.Checked )
-        self.active = self.checkState()
+        self.setEditable( True )
+        if is_active is not None:
+            if is_active:
+                self.setCheckState( Qt.Checked )
+            else:
+                self.setCheckState( Qt.Unchecked )
+        # self.active = self.checkState()
         self.macro_editor_items_list = macro_editor_items_list
         self.itemDuration = item_duration
         self.itemHotkey = item_hotkey
@@ -245,7 +251,7 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
         self.macroThread = None
         self.macroAbortEvent = threading.Event()
         self.isMacroRunning = False
-        self.updateCheckState( self.active )
+        # self.updateCheckState( self.active )
 
     def updateCheckState(self, checked):
         print( 'updateCheckState, state=', checked )
@@ -261,24 +267,27 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
         self.speed_factor = speed_factor
 
     def updateKeySequence(self, key_sequence, just_loaded=False ):
-        if not just_loaded:
-            if key_sequence != '':
-                print( "MTI_KeySequence:", self.text(), key_sequence )
-                if self.hotkey != '':
-                    keyboard.remove_hotkey(self.macroPrep)
-                keyboard.add_hotkey(key_sequence, self.macroPrep)
-                self.hotkey = key_sequence
+        if bool(self.checkState()):
+            if not just_loaded:
+                if key_sequence != '':
+                    print( "MTI_KeySequence:", self.text(), key_sequence )
+                    if self.hotkey != '':
+                        keyboard.remove_hotkey(self.macroPrep)
+                    keyboard.add_hotkey(key_sequence, self.macroPrep)
+                    self.hotkey = key_sequence
+                else:
+                    print("MTI_HotkeyChange", self.text(), " ' ''", key_sequence)
+                    if self.hotkey != '':
+                        keyboard.remove_hotkey(self.hotkey)
+                    self.hotkey = key_sequence
             else:
-                print("MTI_HotkeyChange", self.text(), " ' ''", key_sequence)
-                if self.hotkey != '':
-                    keyboard.remove_hotkey(self.hotkey)
-                self.hotkey = key_sequence
+                if key_sequence != '':
+                    self.hotkey = key_sequence
+                    keyboard.add_hotkey( key_sequence, self.macroPrep )
+                else:
+                    self.hotkey = key_sequence
         else:
-            if key_sequence != '':
-                self.hotkey = key_sequence
-                keyboard.add_hotkey( key_sequence, self.macroPrep )
-            else:
-                self.hotkey = key_sequence
+            self.hotkey = key_sequence
 
     def macroPrep(self):
         if not self.isMacroRunning:
@@ -301,6 +310,10 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
         print( 'macroStop' )
         self.isMacroRunning = False
         self.macroAbortEvent.set()
+        mouse.release('left')
+        mouse.release('right')
+        mouse.release('middle')
+        keyboard.stash_state()
 
     def macroPlay( self, target, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
         timedelta = time.time()
@@ -427,7 +440,6 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
 
     def __str__(self):
         return "MTI(checkState=" + str(bool(self.checkState())) + \
-               ', active=' + str(self.active) + \
                ', isCheckable=' + str(bool(self.isCheckable())) + \
                ', itemDuration=' + str(self.itemDuration) + \
                ', itemHotkey=' + str(self.itemHotkey) + \
@@ -438,18 +450,32 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                ', hotkey=' + str(self.hotkey) + ')\nMTI list' + str([ str(event) for event in self.macro_editor_items_list ])
 
     def __reduce__(self):
-        return (self.__class__, ( self.macro_editor_items_list, self.text(), None, None, None, self.speed_factor, self.hotkey ) )
+        return (self.__class__, ( self.macro_editor_items_list, self.text(), None, None, None, self.speed_factor, self.hotkey, bool(self.checkState()) ) )
 
 
 class SingleKeySequenceEdit(QKeySequenceEdit):
+    polish_alphabet = {
+        'Ą': 'A',
+        'Ć': 'C',
+        'Ę': 'E',
+        'Ł': 'L',
+        'Ń': 'N',
+        'Ó': 'O',
+        'Ź': 'Z',
+        'Ż': 'Z'
+    }
+
     def __init__(self, parent=None):
         super(SingleKeySequenceEdit, self).__init__(parent)
 
     def keyPressEvent(self, QKeyEvent):
         super(SingleKeySequenceEdit, self).keyPressEvent(QKeyEvent)
-        value = self.keySequence()
-        self.setKeySequence(QKeySequence(value))
-        self.keySequenceChanged.emit(value)
+        text = self.keySequence().toString()
+        string_without_polish_letters = ''.join([ letter if letter not in self.polish_alphabet.keys() else self.polish_alphabet[letter] for letter in text ])
+
+        value = QKeySequence().fromString( string_without_polish_letters )
+        self.setKeySequence( value )
+        self.keySequenceChanged.emit( value )
         self.editingFinished.emit()
 
 

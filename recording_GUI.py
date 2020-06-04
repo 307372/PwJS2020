@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'recordingLOvkqm.ui'
+## Form generated from reading UI file 'recordingYKDRMn.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -21,6 +21,13 @@ class Ui_Dialog(object):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
         Dialog.resize(374, 325)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
+        Dialog.setSizePolicy(sizePolicy)
+        Dialog.setMinimumSize(QSize(374, 325))
+        Dialog.setMaximumSize(QSize(374, 325))
         self.pages = QStackedWidget(Dialog)
         self.pages.setObjectName(u"pages")
         self.pages.setGeometry(QRect(10, 0, 361, 281))
@@ -451,9 +458,12 @@ class Ui_Dialog(object):
         self.label.setText(QCoreApplication.translate("Dialog", u"Skr\u00f3t do podgl\u0105du", None))
         self.label_21.setText(QCoreApplication.translate("Dialog", u"Ta czynno\u015b\u0107 nie posiada opcji", None))
         self.universalButtonsGroup.setTitle("")
+#if QT_CONFIG(tooltip)
+        self.save.setToolTip(QCoreApplication.translate("Dialog", u"Dotyczy tylko rzeczy dodanych do listy komend tworz\u0105cych makro.", None))
+#endif // QT_CONFIG(tooltip)
         self.save.setText(QCoreApplication.translate("Dialog", u"Zapisz", None))
 #if QT_CONFIG(tooltip)
-        self.addToActions.setToolTip(QCoreApplication.translate("Dialog", u"Dotyczy jedynie nagra\u0144", None))
+        self.addToActions.setToolTip(QCoreApplication.translate("Dialog", u"Dotyczy jedynie nagra\u0144.", None))
 #endif // QT_CONFIG(tooltip)
         self.addToActions.setText(QCoreApplication.translate("Dialog", u"Dodaj do czynno\u015bci", None))
         self.cancel.setText(QCoreApplication.translate("Dialog", u"Anuluj", None))

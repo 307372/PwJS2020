@@ -55,27 +55,81 @@ class SettingsMethods:
     def loadAllSettings(self, destination='settings.dat'):
         print( destination )
         parser = ConfigParser()
-        parser.read( destination )
 
-        # autoclicker
-        self.ui.AC_Hours.setValue(parser.getint('autoclicker', 'hours'))
-        self.ui.AC_Minutes.setValue(parser.getint('autoclicker', 'minutes'))
-        self.ui.AC_Seconds.setValue(parser.getint('autoclicker', 'seconds'))
-        self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker', 'miliseconds'))
-        self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker', 'whichButton'))
-        self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker', 'hotkey'))
-        self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker', 'clickUntilStopped'))
-        self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker', 'clickNTimes'))
-        self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker', 'clickNTimesN'))
+        if parser.read(destination):
+            # autoclicker
+            self.ui.AC_Hours.setValue(parser.getint('autoclicker', 'hours'))
+            self.ui.AC_Minutes.setValue(parser.getint('autoclicker', 'minutes'))
+            self.ui.AC_Seconds.setValue(parser.getint('autoclicker', 'seconds'))
+            self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker', 'miliseconds'))
+            self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker', 'whichButton'))
+            self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker', 'hotkey'))
+            self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker', 'clickUntilStopped'))
+            self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker', 'clickNTimes'))
+            self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker', 'clickNTimesN'))
 
-        # general
-        self.ui.abortHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'general', 'abortHotkey' )))
-        self.updateAbortionHotkey()
-        print( 'loadAllSettings' )
+            # general
+            self.ui.abortHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'general', 'abortHotkey' )))
+            self.updateAbortionHotkey()
+            print( 'loadAllSettings' )
 
-        # Recording
-        self.recordDialog.recordingHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'recording', 'recordingHotkey' )))
-        self.recordDialog.previewHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'recording', 'previewHotkey' )))
+            # Recording
+            self.recordDialog.recordingHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'recording', 'recordingHotkey' )))
+            self.recordDialog.previewHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'recording', 'previewHotkey' )))
+
+        elif parser.read( 'defaultSettings.dat' ):
+            print( 'settings.dat not found' )
+            self.ui.AC_Hours.setValue(parser.getint('autoclicker', 'hours'))
+            self.ui.AC_Minutes.setValue(parser.getint('autoclicker', 'minutes'))
+            self.ui.AC_Seconds.setValue(parser.getint('autoclicker', 'seconds'))
+            self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker', 'miliseconds'))
+            self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker', 'whichButton'))
+            self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker', 'hotkey'))
+            self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker', 'clickUntilStopped'))
+            self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker', 'clickNTimes'))
+            self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker', 'clickNTimesN'))
+
+            # general
+            self.ui.abortHotkey.setKeySequence(QKeySequence().fromString(parser.get('general', 'abortHotkey')))
+            self.updateAbortionHotkey()
+
+            # Recording
+            self.recordDialog.recordingHotkey.setKeySequence( QKeySequence().fromString(parser.get('recording', 'recordingHotkey')))
+            self.recordDialog.previewHotkey.setKeySequence( QKeySequence().fromString(parser.get('recording', 'previewHotkey')))
+            print( 'loadAllSettings' )
+
+            with open( 'settings.dat', 'w' ) as f:
+                parser.write(f)
+            print('settings.dat created based on defaultSettings.dat')
+
+        else:
+            print( 'settings.dat and defaultSettings.dat not found' )
+            # create defaultSettings.dat
+            config = ConfigParser()
+            config['autoclicker'] = {
+                'hours': 0,
+                'minutes': 0,
+                'seconds': 0,
+                'miliseconds': 100,
+                'whichButton': 0,
+                'hotkey': 'Ctrl+Q',
+                'clickUntilStopped': True,
+                'clickNTimes': False,
+                'clickNTimesN': 1
+            }
+            config['general'] = {
+                'abortHotkey': 'Ctrl+Alt+B'
+            }
+            config['recording'] = {
+                'recordingHotkey': 'Ctrl+Alt+R',
+                'previewHotkey': 'Ctrl+Alt+P'
+            }
+
+            with open('defaultSettings.dat', 'w') as f:
+                config.write(f)
+            print('defaultSettings.dat created.')
+
+            self.loadAllSettings()
 
     def settingsDefaultConfirmation(self):
         print( 'settingsDefaultConfirmation' )

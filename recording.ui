@@ -10,6 +10,24 @@
     <height>325</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>374</width>
+    <height>325</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>374</width>
+    <height>325</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Edytor akcji</string>
   </property>
@@ -1023,6 +1041,9 @@ Windows w normalny sposób do kombinacji klawiszy.</string>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QPushButton" name="save">
+      <property name="toolTip">
+       <string>Dotyczy tylko rzeczy dodanych do listy komend tworzących makro.</string>
+      </property>
       <property name="text">
        <string>Zapisz</string>
       </property>
@@ -1031,7 +1052,7 @@ Windows w normalny sposób do kombinacji klawiszy.</string>
     <item>
      <widget class="QPushButton" name="addToActions">
       <property name="toolTip">
-       <string>Dotyczy jedynie nagrań</string>
+       <string>Dotyczy jedynie nagrań.</string>
       </property>
       <property name="text">
        <string>Dodaj do czynności</string>

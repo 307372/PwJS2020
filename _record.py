@@ -21,10 +21,13 @@ class RecordMethods:
 
     def unpickleRecordings(self):
         print( 'unpickleRecordings' )
-        with open( "recordedActions.pickle", "rb") as pickle_in:  # rb - read bytes
-            self.recordsDict = pickle.load( pickle_in )
-            for key in self.recordsDict:
-                QTreeWidgetItem(self.ui.creatorEditorActions.topLevelItem(3), [key])
+        try:
+            with open( "recordedActions.pickle", "rb") as pickle_in:  # rb - read bytes
+                self.recordsDict = pickle.load( pickle_in )
+                for key in self.recordsDict:
+                    QTreeWidgetItem(self.ui.creatorEditorActions.topLevelItem(3), [key])
+        except:
+            print( 'recordedActions.pickle not found!' )
 
     def creatorRecordDisplay(self):
         print( 'creatorRecordDisplay' )
@@ -109,8 +112,7 @@ class RecordMethods:
                 keyboard.remove_hotkey(self.creatorPreviewHotkey)
             self.creatorPreviewHotkey = hotkey
 
-    def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True,
-                      include_keyboard=True):
+    def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
         timedelta = time.time()
         state = keyboard.stash_state()
         t0 = time.time()
@@ -211,6 +213,8 @@ class RecordMethods:
         print('creatorRecordPreviewStop')
         self.macroAbortEvent.set()
         self.isMacroRunning = False
+        self.releaseAllMouseButtons()
+        keyboard.stash_state()
 
     def creatorRecordPreviewToggle(self):
         print('creatorRecordPreviewToggle')
@@ -241,12 +245,15 @@ class RecordMethods:
     def creatorRecordAddToActions(self):
         print( 'creatorRecordAddToActions' )
         if self.recordDialog.name.text() != '':
-            if self.recordDialog.name.text() in self.recordsDict:
-                self.creatorRecordOverwriteConfirmation()
+            if not(self.recordDialog.name.text() in self.macroElementNametags.values()):
+                if self.recordDialog.name.text() in self.recordsDict:
+                    self.creatorRecordOverwriteConfirmation()
+                else:
+                    QTreeWidgetItem( self.ui.creatorEditorActions.topLevelItem(3), [self.recordDialog.name.text()] )
+                    self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recordedObject.events, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
+                    self.pickleRecordings()
             else:
-                QTreeWidgetItem( self.ui.creatorEditorActions.topLevelItem(3), [self.recordDialog.name.text()] )
-                self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recordedObject.events, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
-                self.pickleRecordings()
+                print( 'Nagranie nie moze sie nazywac jak funkcja wbudowana!' )
 
     def creatorRecordRightSliderSpinBoxSync(self):  # Slider changes value => SpinBox value is changed
         print( 'creatorRecordRightSliderSpinBoxSync' )
