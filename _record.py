@@ -141,7 +141,8 @@ class RecordMethods:
                 keyboard.press(key) if event.event_type == keyboard.KEY_DOWN else keyboard.release(key)
             elif isinstance(event, WheelEventV2) and include_wheel:
                 mouse.wheel(event.delta)
-        keyboard.restore_modifiers(state)
+        keyboard.stash_state()
+        self.releaseAllMouseButtons()
         print(time.time() - timedelta)
         print("playRecording")
 
@@ -249,7 +250,8 @@ class RecordMethods:
                 if self.recordDialog.name.text() in self.recordsDict:
                     self.creatorRecordOverwriteConfirmation()
                 else:
-                    QTreeWidgetItem( self.ui.creatorEditorActions.topLevelItem(3), [self.recordDialog.name.text()] )
+                    x = QTreeWidgetItem( self.ui.creatorEditorActions.topLevelItem(3), [self.recordDialog.name.text()] )
+                    x.parent().setExpanded(True)
                     self.recordsDict[self.recordDialog.name.text()] = RecordingEvent(name=self.recordDialog.name.text(), cut_left=self.recordDialog.cutTimeLeft.value(), cut_right=self.recordDialog.cutTimeRight.value(), events=self.recordedObject.events, speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked())
                     self.pickleRecordings()
             else:

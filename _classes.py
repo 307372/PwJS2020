@@ -294,6 +294,8 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
             self.isMacroRunning = True
             self.macroThread = threading.Thread(target=self.macroStart)
             self.macroThread.start()
+            self.macroThread.join()
+            self.macroStop()
         else:
             self.macroStop()
 
@@ -309,11 +311,11 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
     def macroStop(self):
         print( 'macroStop' )
         self.isMacroRunning = False
-        self.macroAbortEvent.set()
         mouse.release('left')
         mouse.release('right')
         mouse.release('middle')
         keyboard.stash_state()
+        self.macroAbortEvent.set()
 
     def macroPlay( self, target, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
         timedelta = time.time()

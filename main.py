@@ -4,8 +4,11 @@ import threading
 from copy import deepcopy
 import pickle
 import random
+from math import floor
 from keyboard import KeyboardEvent
 import keyboard
+# import psutil
+from win32ui import FindWindow, error
 from configparser import ConfigParser
 import time
 from mouse import ButtonEvent, WheelEvent, MoveEvent
@@ -18,7 +21,7 @@ from _classes import RecordingEvent, MoveEventV2, ButtonEventV2, WheelEventV2, M
 from collections import namedtuple
 
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox, QTreeWidgetItem, QDoubleSpinBox, QPushButton, QKeySequenceEdit
-from PySide2.QtCore import QSignalBlocker, QRegularExpression, Qt, QRect, QModelIndex, QItemSelectionRange, QItemSelection
+from PySide2.QtCore import QSignalBlocker, QRegularExpression, Qt, QRect, QModelIndex, QItemSelectionRange, QItemSelection, QCoreApplication
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QKeySequence, QCloseEvent
 from ui_GUI import Ui_MainWindow
 from recording_GUI import Ui_Dialog
@@ -48,12 +51,15 @@ def writeGoodEnough(text, delay=0, restore_state_after=True):
 
 class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMethods, _settings.SettingsMethods, _editorOpeningAndSaving.OpeningAndSaving):
     def __init__( self ):
+        self.checkIfProgramIsAlreadyRunning()
         super( MainWindow, self ).__init__()  # Calling parent constructor
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi( self )
 
         # AC = autoclicker
         if True:
+            # AC Mouse
             self.ui.AC_Hotkey = SingleKeySequenceEdit(parent=self.ui.groupBox)
             self.ui.AC_Hotkey.setObjectName(u"AC_Hotkey")
             self.ui.AC_Hotkey.setGeometry(QRect(20, 110, 113, 20))
@@ -62,7 +68,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
 
             self.ui.AC_Hotkey.editingFinished.connect(self.AC_HotkeyChange)
             self.AC_Hotkey = self.ui.AC_Hotkey.keySequence().toString()
-            print(self.ui.AC_Hotkey.keySequence().toString())
+            # print(self.ui.AC_Hotkey.keySequence().toString())
             if self.ui.AC_Hotkey.keySequence().toString() != '':
                 keyboard.add_hotkey(self.ui.AC_Hotkey.keySequence().toString(), self.AC_Toggle)
 
@@ -74,10 +80,30 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             self.AC_MouseButtonUpdate()
             self.ui.AC_WhichButton.currentTextChanged.connect(self.AC_MouseButtonUpdate)
 
+            # AC Keyboard
+
+            self.ui.AC_KeyboardKeySequence = SingleKeySequenceEdit(self.ui.AC_KeyboardOptions)
+            self.ui.AC_KeyboardKeySequence.setObjectName(u"AC_KeyboardKeySequence")
+            self.ui.verticalLayout_2.insertWidget( 2, self.ui.AC_KeyboardKeySequence)
+
+            self.ui.AC_KeyboardHotkey = SingleKeySequenceEdit(self.ui.AC_KeyboardOptions)
+            self.ui.AC_KeyboardHotkey.setObjectName(u"AC_KeyboardHotkey")
+            self.ui.verticalLayout_2.insertWidget( 5, self.ui.AC_KeyboardHotkey)
+
+            self.ui.AC_KeyboardStart.clicked.connect(self.AC_KeyboardStartPrep)
+            self.ui.AC_KeyboardStop.clicked.connect(self.AC_KeyboardStop)
+            self.isACKeyboardRunning = False
+            self.AC_KeyboardThread = threading.Event()
+            self.AC_KeyboardHotkey = ''
+            self.ui.AC_KeyboardHotkey.editingFinished.connect(self.AC_KeyboardHotkeyChange)
+
+
+
         # creator
         self.dialog = QDialog()
         self.recordDialog = Ui_Dialog()
         self.recordDialog.setupUi(self.dialog)
+        # dialog stuff
         if True:
             self.recordDialog.keyboardButtonSelection = SingleKeySequenceEdit( self.recordDialog.keyboardButtonGB )
             self.recordDialog.keyboardButtonSelection.setObjectName(u"keyboardButtonSelection")
@@ -90,6 +116,10 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             self.recordDialog.previewHotkey = SingleKeySequenceEdit(self.recordDialog.hotkeys)
             self.recordDialog.previewHotkey.setObjectName(u"previewHotkey")
             self.recordDialog.verticalLayout_2.insertWidget( 3, self.recordDialog.previewHotkey )
+
+            self.recordDialog.waitKeyboardHotkey = SingleKeySequenceEdit(self.recordDialog.waitKeyboardGB)
+            self.recordDialog.waitKeyboardHotkey.setObjectName(u"waitKeyboardHotkey")
+            self.recordDialog.waitKeyboardHotkey.setGeometry(QRect(110, 80, 113, 20))
 
         # validator = QRegularExpression("[_]*")        # Ma nieprzyjmować podkreślników!
         # self.recordDialog.name.setValidator()
@@ -132,7 +162,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         self.ui.creatorEditorTreeView.setColumnWidth(0, 355)
         self.ui.creatorEditorTreeView.setColumnWidth(1, 100)
         self.treeModel.setHeaderData(0, Qt.Horizontal, 'Nazwa czynności')
-        self.treeModel.setHeaderData(1, Qt.Horizontal, 'Czas do wykonania')
+        self.treeModel.setHeaderData(1, Qt.Horizontal, 'Czas po wykonaniu')
         self.editorSelectionModel = self.ui.creatorEditorTreeView.selectionModel()
         self.ui.creatorEditorDeleteFromActions.setDisabled(True)
         self.ui.creatorEditorAddToMacro.setDisabled(True)
@@ -161,6 +191,8 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         self.recordedLength = 0
 
         # settings
+        self.execution_time = 0.0001
+
         self.ui.settingsDefault.clicked.connect( self.settingsDefaultConfirmation )
         self.ui.forceSave.clicked.connect( lambda: self.saveAllSettings(destination='settings.dat', forced=True))
         self.ui.forceLoad.clicked.connect( lambda: self.loadAllSettings(destination='settings.dat'))
@@ -223,7 +255,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
 
             # Test functions
 
-            self.ui.testButton_3.clicked.connect(self.testowa)
+            self.ui.testButton_3.clicked.connect(self.checkIfProgramIsAlreadyRunning)
             self.ui.macroSaveAllMacrosButton.clicked.connect(self.saveAllMacros)
             self.ui.macroLoadAllMacrosButton.clicked.connect(self.loadAllMacros)
             self.ui.macroClearMacroDataButton.clicked.connect(self.clearMacroData)
@@ -246,6 +278,28 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             self.ui.AC_ClickUntilStopped.clicked.connect(self.autosave)
             self.ui.AC_ClickNTimes.clicked.connect(self.autosave)
             self.ui.AC_ClickNTimesN.editingFinished.connect(self.autosave)
+
+            self.ui.AC_KeyboardHours.valueChanged.connect(self.autosave)
+            self.ui.AC_KeyboardMinutes.valueChanged.connect(self.autosave)
+            self.ui.AC_KeyboardSeconds.valueChanged.connect(self.autosave)
+            self.ui.AC_KeyboardMiliseconds.valueChanged.connect(self.autosave)
+            self.ui.AC_KeyboardKeySequence.editingFinished.connect(self.autosave)
+            self.ui.AC_KeyboardHotkey.editingFinished.connect(self.autosave)
+            self.ui.AC_KeyboardClickUntilStopped.clicked.connect(self.autosave)
+            self.ui.AC_KeyboardClickNTimes.clicked.connect(self.autosave)
+            self.ui.AC_KeyboardHold.clicked.connect(self.autosave)
+            self.ui.AC_KeyboardClickNTimesN.editingFinished.connect(self.autosave)
+
+    def checkIfProgramIsAlreadyRunning(self):
+        # print( 'Name of the window:', self.windowTitle() )
+        target_window_title = 'Automatyczne robienie rzeczy 0.8'
+        try:
+            FindWindow( None, target_window_title )  # win32ui.FindWindow
+        except error:  # win32ui.error
+            print( 'Nie znaleziono' )
+        else:
+            print( 'Znaleziono' )
+            exit()
 
     def releaseAllMouseButtons(self):
         mouse.release( 'left' )
@@ -374,7 +428,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             self.ui.creatorEditorTreeView.setColumnWidth(0, 355)
             self.ui.creatorEditorTreeView.setColumnWidth(1, 100)
             self.treeModel.setHeaderData(0, Qt.Horizontal, 'Nazwa czynności')
-            self.treeModel.setHeaderData(1, Qt.Horizontal, 'Czas do wykonania')
+            self.treeModel.setHeaderData(1, Qt.Horizontal, 'Czas po wykonaniu')
 
             self.ui.creatorEditorName.clear()
             self.editorSelectionModel = self.ui.creatorEditorTreeView.selectionModel()
@@ -412,7 +466,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             self.ui.creatorEditorTreeView.setColumnWidth(0, 355)
             self.ui.creatorEditorTreeView.setColumnWidth(1, 100)
             self.treeModel.setHeaderData(0, Qt.Horizontal, 'Nazwa czynności')
-            self.treeModel.setHeaderData(1, Qt.Horizontal, 'Czas do wykonania')
+            self.treeModel.setHeaderData(1, Qt.Horizontal, 'Czas po wykonaniu')
 
             self.ui.creatorEditorName.clear()
             self.editorSelectionModel = self.ui.creatorEditorTreeView.selectionModel()
@@ -600,61 +654,84 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         # self.ui.creatorEditorTreeView.mousePressEvent.connect( self.testowa )  # DO DOKONCZENIA - ZAZNACZENIE AKTYWUJE SKRÓT DO MAKRO
 
     def MTIchanged(self, item ):
-        print( bool(item.checkState()) )
-        if bool(item.checkState()):  # just got set to active
-            if item.hotkey != '':
-                try:
-                    keyboard.remove_hotkey( item.hotkey )
-                except KeyError:
-                    pass
-                keyboard.add_hotkey( item.hotkey, item.macroPrep )
-                print( 'Hotkey set to:', item.hotkey )
-            else:
-                print( 'Hotkey set to nothing' )
-        else:  # just set to inactive
-            if item.hotkey != '':
-                try:
-                    keyboard.remove_hotkey( item.hotkey )
-                    print('Hotkey now inactive')
-                except KeyError:
-                    print('Hotkey was inactive anyway')
-            else:
-                print( 'Hotkey was inactive anyway' )
+        # print( bool(item.checkState()) )
+        print( type(item).__name__, item.text() )
+        if type(item).__name__ == 'MacroTreeviewItem':
+            if bool(item.checkState()):  # just got set to active
+                if item.hotkey != '':
+                    try:
+                        keyboard.remove_hotkey( item.hotkey )
+                    except KeyError:
+                        print( 'Hotkey was inactive anyway' )
+                    keyboard.add_hotkey( item.hotkey, item.macroPrep )
+                    print( 'Hotkey set to:', item.hotkey )
+                else:
+                    print( 'Hotkey set to nothing' )
+            else:  # just set to inactive
+                if item.hotkey != '':
+                    try:
+                        keyboard.remove_hotkey( item.hotkey )
+                        print('Hotkey now inactive')
+                    except KeyError:
+                        print('Hotkey was inactive anyway')
+                else:
+                    print( 'Hotkey was inactive anyway' )
 
-        if item.last_known_name == item.text():
-            print( 'te same nazwy', item.last_known_name, item.text() )
-        else:
-            counter = 0
-            for MTI in self.macroTreeviewItems:
-                if MTI.text() == item.text():
-                    counter += 1
-            if counter == 0:
-                print( 'Cos tu nie gra!' )
-            elif counter == 1:
-                print( 'Dokladnie jedno macro o tej nowej nazwie. Można zapisać.' )
-                os.remove('macros/' + item.last_known_name + '.pickle')
-                item.last_known_name = item.text()
+            if item.last_known_name == item.text():
+                print( 'te same nazwy', item.last_known_name, item.text() )
             else:
-                print( 'Więcej niż jedno macro o tej nowej nazwie - cofam zmianę nazwy' )
-                item.setText( item.last_known_name )
+                counter = 0
+                for MTI in self.macroTreeviewItems:
+                    if MTI.text() == item.text():
+                        counter += 1
+                if counter == 0:
+                    print( 'Cos tu nie gra!' )
+                elif counter == 1:
+                    print( 'Dokladnie jedno macro o tej nowej nazwie. Można zapisać.' )
+                    os.remove('macros/' + item.last_known_name + '.pickle')
+                    item.last_known_name = item.text()
+                else:
+                    print( 'Więcej niż jedno macro o tej nowej nazwie - cofam zmianę nazwy' )
+                    item.setText( item.last_known_name )
 
-        self.saveSingleMacro( item )
+            self.saveSingleMacro( item )
 
     def deleteSelectedMacro(self):
         indexes = self.ui.macroTreeView.selectedIndexes()
         if indexes != []:
-            print( 'deleteSelectedMacro' )
-            row_number = indexes[0].row()
-            root_index = self.macroTreeModel.indexFromItem(self.macroRootNode)
-            item = self.macroTreeviewItems[row_number]
-            if item.hotkey != '':
-                try:
-                    keyboard.remove_hotkey( item.hotkey )
-                except KeyError:
-                    pass
-            os.remove('macros/' + item.text() + '.pickle')
-            self.macroTreeModel.removeRow( row_number, root_index )
-            self.macroTreeviewItems.pop( row_number )
+            self.deleteSelectedMacroConfirmation()
+
+    def deleteSelectedMacroConfirmation(self):
+        print( 'deleteSelectedMacroConfirmation' )
+        msg = QMessageBox()
+        msg.setWindowTitle("Usuwanie makra")
+        msg.setText("Czy na pewno chcesz usunąć zaznaczone makro?")
+        msg.setInformativeText("Ta czynność jest nieodwracalna!")
+        msg.setIcon( QMessageBox.Warning )
+        msg.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel )
+        msg.setDefaultButton( QMessageBox.Cancel )
+        msg.buttonClicked.connect( self.deleteSelectedMacroConfirmed )
+        x = msg.exec_()
+
+    def deleteSelectedMacroConfirmed(self, i):
+        print( 'deleteSelectedMacroConfirmed' )
+        if i.text() == 'OK':
+            print("Macro deleted")
+            indexes = self.ui.macroTreeView.selectedIndexes()
+            if indexes != []:
+                print('deleteSelectedMacro')
+                row_number = indexes[0].row()
+                root_index = self.macroTreeModel.indexFromItem(self.macroRootNode)
+                item = self.macroTreeviewItems[row_number]
+                if item.hotkey != '':
+                    try:
+                        keyboard.remove_hotkey(item.hotkey)
+                    except KeyError:
+                        pass
+                os.remove('macros/' + item.text() + '.pickle')
+                self.macroTreeModel.removeRow(row_number, root_index)
+                self.macroTreeviewItems.pop(row_number)
+
 
     def inspectMacroItem(self):
         print( 'inspectMacroItem' )
@@ -750,7 +827,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             if is_name_known:
                 blocker = QSignalBlocker( self.editorSelectionModel )
                 if self.ui.creatorEditorTreeView.selectedIndexes() == []:   # if no action in the macro is selected
-                    self.rootNode.appendRow( item )
+                    self.rootNode.appendRow( [item, QStandardItem('1')] )
                     self.macroElements.append( item )  # Dodawanie elementu do listy poleceń makra
 
                     if item_name == "Wykonaj N razy":
@@ -805,8 +882,8 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                     else:  # if item in not from top level of the tree
 
                         item_index = self.ui.creatorEditorTreeView.selectedIndexes()[0].row() + 1
-                        self.treeModel.itemFromIndex( parent_index ).insertRow( item_index, item )
-                        self.treeModel.itemFromIndex( parent_index ).setChild( item_index, item )
+                        self.treeModel.itemFromIndex( parent_index ).insertRow( item_index, [item, QStandardItem('123')] )
+                        # self.treeModel.itemFromIndex( parent_index ).setChild( item_index, [item, QStandardItem()] )
                         self.treeModel.itemFromIndex( parent_index ).action.event_list.insert( item_index, item )  # Dodawanie elementu do listy poleceń makra
 
                         if item_name == "Wykonaj N razy":
@@ -830,8 +907,9 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
 
                             self.editorSelectionModel.select(selection, self.editorSelectionModel.ClearAndSelect)
 
-                blocker.unblock()
                 self.macroUpdateTime()
+                blocker.unblock()
+
                 self.ui.creatorEditorDeleteFromMacro.setDisabled(self.isPlaceholderSelected())  # dostępne
                 self.ui.creatorEditorSave.setDisabled(self.checkIfSavingIsPossible())
                 self.creatorOpenSelectedInEditor()  # Musi być ostatnie!
@@ -870,7 +948,9 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
     def creatorMoveSelectedActionUp(self):
         print( 'creatorMoveSelectedActionUp' )
         indexes = self.ui.creatorEditorTreeView.selectedIndexes()
+
         if indexes != []:
+            qt_is_broken_and_for_some_reason_this_fixes_it = self.treeModel.itemFromIndex(self.macroElements[-1].index().siblingAtColumn(1))
             row_number = indexes[0].row()
             parent_index = indexes[0].parent()
             print( 'row:', row_number )
@@ -899,8 +979,11 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                 self.macroUpdateTime()
 
             elif row_number > 0 and not parent_index.isValid():
+                print('row_number:', row_number )
                 parent_item = self.rootNode
                 row_of_items = parent_item.takeRow(row_number)
+
+                print( 'row_of_items:', row_of_items )
                 parent_item.insertRow(row_number - 1, row_of_items)
 
                 self.macroElements.insert(row_number - 1, self.macroElements.pop(row_number))
@@ -929,6 +1012,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             print( 'row:', row_number )
             print( 'parent:', parent_index )
 
+
             if parent_index.isValid():
                 parent_item = self.treeModel.itemFromIndex( parent_index )
                 row_limit = len( parent_item.action.event_list )
@@ -955,6 +1039,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                 parent_item = self.rootNode
                 row_limit = len( self.macroElements )
                 if row_number + 1 < row_limit:
+                    print( 'row_number:', row_number, 'row_limit:', row_limit )
                     row_of_items = parent_item.takeRow( row_number )
                     parent_item.insertRow(row_number + 1, row_of_items)
 
@@ -977,9 +1062,15 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         print( 'inspectThis' )
         # print( self.macroElements )
         indexes = self.ui.creatorEditorTreeView.selectedIndexes()
-        print( self.treeModel.itemFromIndex(indexes[0]) )
-        print( 'sibling:', self.treeModel.itemFromIndex(indexes[0].siblingAtColumn(1) ))
-        self.showMacroStructure()
+        print( 'Row: [', end='')
+        for index in indexes:
+            print( self.treeModel.itemFromIndex(index), end=', ' )
+        print(']')
+        item = self.treeModel.itemFromIndex(indexes[0])
+        sibling = self.treeModel.itemFromIndex(item.index().siblingAtColumn(1))
+        print('item:', item, 'sibling:', sibling)
+        # self.showMacroStructure()
+
         # print( 'indexes', indexes )
         # print( 'data 0:', indexes[0].data() )
         # print( self.treeModel.itemFromIndex( indexes[0].parent() ).action.event_list )
@@ -1034,14 +1125,65 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         if len(self.macroElements) > 0:
             self.macroTotalTime = self.updateTime( self.macroElements )
 
-    def updateTime(self, events, indentation='', update_text=True):
+            # time_string = str( floor( self.macroTotalTime*100)/100 )
+            # self.treeModel.itemFromIndex(self.macroElements[-1].index().siblingAtColumn(1)).setText(time_string)
+
+    def updateTime_backup(self, events, indentation='', update_text=True):
         # print( 'updateTime, len(self.macroElements)', len( events ) )
         recording_duration = 0
         for_event_duration = 0
         execution_time = 0.005  # 10ms ( estimated time distance between recorded mouse events on my PC )
-        for i in range( len(events) ):
-            if i == 0 or isinstance( events[i].action, PlaceholderEvent ) or isinstance( events[i-1].action, PlaceholderEvent ):
+        for i in range(len(events)):
+            if i == 0 or isinstance(events[i].action, PlaceholderEvent) or isinstance(events[i - 1].action,
+                                                                                      PlaceholderEvent):
                 events[i].action.time = 0
+            else:
+                if events[i].action.event_type in ['keyboard', 'mouse']:
+                    events[i].action.time = events[i - 1].action.time
+                elif events[i].action.event_type == 'nseconds':
+                    events[i].action.time = events[i - 1].action.time + events[i].action.wait_time
+                else:
+                    events[i].action.time = events[i - 1].action.time + execution_time
+
+                if isinstance(events[i - 1].action, MoveEventV2):
+                    events[i].action.time += events[i - 1].action.duration
+                elif events[i - 1].action.event_type == 'nseconds':
+                    events[i].action.time += events[i - 1].action.wait_time
+                elif isinstance(events[i - 1].action, ForEvent):
+                    events[i].action.time += for_event_duration
+                    for_event_duration = 0
+                elif isinstance(events[i - 1].action, RecordingEvent):
+                    if events[i - 1].action != events[i].action:  # Happens when it's the only element in macro
+                        events[i].action.time += recording_duration + execution_time
+                        recording_duration = 0
+
+            if not isinstance(events[i].action, PlaceholderEvent) and update_text:
+                self.treeModel.itemFromIndex(events[i].index().siblingAtColumn(1)).setText(str(floor(
+                    events[i].action.time * 100) / 100))  # self.treeModel.itemFromIndex(indexes[0].siblingAtColumn(1).
+
+            if isinstance(events[i].action, ForEvent):
+                for_event_duration = (self.updateTime(events[i].action.event_list, indentation + '   ',
+                                                      update_text=update_text) + execution_time) * events[
+                                         i].action.times
+            elif isinstance(events[i].action, RecordingEvent):
+                if len(events[i].action.events_final) > 0:
+                    recording_duration = events[i].action.events_final[-1].time / events[i].action.speed_factor
+                else:
+                    recording_duration = 0
+                # + execution_time to account for last action's duration. It could be a problem if ForEvent events were executed many times
+        return float(events[-1].action.time + for_event_duration + recording_duration)
+
+    def updateTime(self, events, indentation='', update_text=True):
+        # print( 'updateTime, len(self.macroElements)', len( events ) )
+        recording_duration = 0
+        for_event_duration = 0
+        execution_time = self.ui.execution_time.value() / 1000  # 5ms ( estimated time distance between recorded mouse events on my PC )
+        for i in range( len(events) ):
+            if (i == 0 or isinstance( events[i].action, PlaceholderEvent ) or isinstance( events[i-1].action, PlaceholderEvent )):
+                if events[i].action.event_type == 'nseconds':
+                    events[i].action.time = events[i].action.wait_time
+                else:
+                    events[i].action.time = 0
             else:
                 if events[i].action.event_type in ['keyboard', 'mouse']:
                     events[i].action.time = events[i-1].action.time
@@ -1052,8 +1194,8 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
 
                 if isinstance( events[i-1].action, MoveEventV2 ):
                     events[i].action.time += events[i-1].action.duration
-                elif events[i-1].action.event_type == 'nseconds':
-                    events[i].action.time += events[i-1].action.wait_time
+                # elif events[i-1].action.event_type == 'nseconds':
+                    # events[i].action.time += events[i-1].action.wait_time
                 elif isinstance( events[i-1].action, ForEvent ):
                     events[i].action.time += for_event_duration
                     for_event_duration = 0
@@ -1063,7 +1205,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                         recording_duration = 0
 
             if not isinstance( events[i].action, PlaceholderEvent ) and update_text:
-                self.treeModel.itemFromIndex(events[i].index().siblingAtColumn(1)).setText( str(round(events[i].action.time*100)/100) )  # self.treeModel.itemFromIndex(indexes[0].siblingAtColumn(1).
+                self.treeModel.itemFromIndex(events[i].index().siblingAtColumn(1)).setText( str(floor(events[i].action.time*1000)/1000) )  # self.treeModel.itemFromIndex(indexes[0].siblingAtColumn(1).
 
             if isinstance( events[i].action, ForEvent ):
                 for_event_duration = (self.updateTime( events[i].action.event_list, indentation + '   ', update_text=update_text ) + execution_time) * events[i].action.times
@@ -1075,12 +1217,70 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                 # + execution_time to account for last action's duration. It could be a problem if ForEvent events were executed many times
         return float( events[-1].action.time + for_event_duration + recording_duration )
 
+    def updateTime_testowy(self, events, indentation='', update_text=True):
+        # print( 'updateTime, len(self.macroElements)', len( events ) )
+        recording_duration = 0
+        for_event_duration = 0
+        execution_time = 0.005  # 10ms ( estimated time distance between recorded mouse events on my PC )
+        for i in range( len(events) ):
+            if (i == 0 or isinstance( events[i].action, PlaceholderEvent ) or isinstance( events[i-1].action, PlaceholderEvent )):
+                if events[i].action.event_type == 'nseconds':
+                    events[i].action.time = events[i].action.wait_time
+                else:
+                    events[i].action.time = 0
+            else:
+                if events[i].action.event_type in ['keyboard', 'mouse']:
+                    events[i].action.time = events[i-1].action.time
+                elif events[i].action.event_type == 'nseconds':
+                    events[i].action.time = events[i-1].action.time + events[i].action.wait_time
+                else:
+                    events[i].action.time = events[i-1].action.time + execution_time
+
+                if isinstance( events[i-1].action, MoveEventV2 ):
+                    events[i].action.time += events[i-1].action.duration
+                # elif events[i-1].action.event_type == 'nseconds':
+                    # events[i].action.time += events[i-1].action.wait_time
+                elif isinstance( events[i-1].action, ForEvent ):
+                    events[i].action.time += for_event_duration
+                    for_event_duration = 0
+                elif isinstance( events[i-1].action, RecordingEvent ):
+                    if events[i-1].action != events[i].action:  # Happens when it's the only element in macro
+                        events[i].action.time += recording_duration + execution_time
+                        recording_duration = 0
+
+              # self.treeModel.itemFromIndex(indexes[0].siblingAtColumn(1).
+
+            if isinstance( events[i].action, ForEvent ):
+                for_event_duration = (self.updateTime( events[i].action.event_list, indentation + '   ', update_text=update_text ) + execution_time) * events[i].action.times
+            elif isinstance( events[i].action, RecordingEvent ):
+                if len(events[i].action.events_final) > 0:
+                    recording_duration = events[i].action.events_final[-1].time / events[i].action.speed_factor
+                else:
+                    recording_duration = 0
+                # + execution_time to account for last action's duration. It could be a problem if ForEvent events were executed many times
+
+            if not isinstance( events[i].action, PlaceholderEvent ) and update_text and i > 0:
+                if events[i].action.event_type != 'nseconds':
+                    print( "events[i-1].index()", events[i-1].index() ) # index invalid????????????????????????????????????????????????????
+                    print("self.treeModel.itemFromIndex(events[i - 1].index())", self.treeModel.itemFromIndex(events[i - 1].index()))
+                    sibling_index = self.treeModel.itemFromIndex(events[i - 1].index())  # .index().siblingAtColumn(1)
+                    sibling = self.treeModel.itemFromIndex(sibling_index)
+                    sibling.setText( str(floor(events[i].action.time*100)/100) )
+                else:
+                    self.treeModel.itemFromIndex(events[i - 1].index().siblingAtColumn(1)).setText(str(floor(events[i-1].action.time * 100) / 100))
+
+        return float( events[-1].action.time + for_event_duration + recording_duration )
+
     def previewMacro(self):
         print( 'previewMacro' )
         before = time.time()
         self.macroAbortEvent = threading.Event()
         self.macroThread = threading.Thread(target=lambda: self.macroPlay( self.macroElements ) )
         self.macroThread.start()
+        self.macroThread.join()
+        self.isMacroRunning = False
+        self.releaseAllMouseButtons()
+        keyboard.stash_state()
 
         print( 'Total macro duration:', time.time() - before )
 
@@ -1171,7 +1371,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                 pass
             else:
                 print('Nieznany typ eventu', event)
-        self.isMacroRunning = False
+
         keyboard.restore_modifiers(state)
         # keyboard.release( self.recordDialog.recordingHotkey.keySequence().toString() )
         # keyboard.release( self.recordDialog.previewHotkey.keySequence().toString() )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'recordingYKDRMn.ui'
+## Form generated from reading UI file 'recordinggpsZVu.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -196,9 +196,6 @@ class Ui_Dialog(object):
         self.waitKeyboardGB = QGroupBox(self.editWaitKeyboard)
         self.waitKeyboardGB.setObjectName(u"waitKeyboardGB")
         self.waitKeyboardGB.setGeometry(QRect(0, 0, 361, 281))
-        self.waitKeyboardHotkey = QKeySequenceEdit(self.waitKeyboardGB)
-        self.waitKeyboardHotkey.setObjectName(u"waitKeyboardHotkey")
-        self.waitKeyboardHotkey.setGeometry(QRect(110, 80, 113, 20))
         self.label_19 = QLabel(self.waitKeyboardGB)
         self.label_19.setObjectName(u"label_19")
         self.label_19.setGeometry(QRect(50, 40, 245, 13))
@@ -208,7 +205,7 @@ class Ui_Dialog(object):
         self.waitKeyboardSuppressor.setChecked(True)
         self.label_20 = QLabel(self.waitKeyboardGB)
         self.label_20.setObjectName(u"label_20")
-        self.label_20.setGeometry(QRect(70, 240, 209, 13))
+        self.label_20.setGeometry(QRect(60, 240, 222, 13))
         self.pages.addWidget(self.editWaitKeyboard)
         self.editWaitNSeconds = QWidget()
         self.editWaitNSeconds.setObjectName(u"editWaitNSeconds")
@@ -378,7 +375,7 @@ class Ui_Dialog(object):
 
         self.retranslateUi(Dialog)
 
-        self.pages.setCurrentIndex(9)
+        self.pages.setCurrentIndex(6)
 
 
         QMetaObject.connectSlotsByName(Dialog)
@@ -432,7 +429,7 @@ class Ui_Dialog(object):
         self.waitKeyboardGB.setTitle(QCoreApplication.translate("Dialog", u"Czekaj na akcj\u0119 klawiatury", None))
         self.label_19.setText(QCoreApplication.translate("Dialog", u"Wybierz na jak\u0105 akcj\u0119 klawiatury ma czeka\u0107 macro:", None))
         self.waitKeyboardSuppressor.setText(QCoreApplication.translate("Dialog", u"Czy wci\u015bni\u0119ty klawisz ma by\u0107 wyg\u0142uszony? ", None))
-        self.label_20.setText(QCoreApplication.translate("Dialog", u"(Inne aplikacje zarejesturj\u0105 jego wci\u015bni\u0119cia)", None))
+        self.label_20.setText(QCoreApplication.translate("Dialog", u"(Inaczej aplikacje zarejesturj\u0105 jego wci\u015bni\u0119cia)", None))
         self.waitNSecondsGB.setTitle(QCoreApplication.translate("Dialog", u"Czekaj N sekund", None))
         self.label_18.setText(QCoreApplication.translate("Dialog", u"Ile sekund czeka\u0107?", None))
         self.forLoopGB.setTitle(QCoreApplication.translate("Dialog", u"Wykonaj N razy", None))

@@ -1,18 +1,31 @@
-[autoclicker]
+[autoclicker_M]
 hours = 0
 minutes = 0
 seconds = 0
 miliseconds = 10
 whichbutton = 0
-hotkey = Ctrl+Alt+Q
+hotkey = Ctrl+Q
 clickuntilstopped = True
 clickntimes = False
 clickntimesn = 1
 
+[autoclicker_K]
+hours = 0
+minutes = 0
+seconds = 0
+miliseconds = 10
+keysequence = W
+hotkey = Ctrl+K
+clickntimes = False
+clickuntilstopped = True
+hold = False
+clickntimesn = 1
+
 [general]
 aborthotkey = Ctrl+Alt+B
+execution_time = 5
 
 [recording]
-recordinghotkey = Ctrl+R
-previewhotkey = Ctrl+P
+recordinghotkey = Ctrl+Alt+R
+previewhotkey = Ctrl+Alt+P
 

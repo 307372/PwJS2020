@@ -27,19 +27,33 @@ class SettingsMethods:
         print( 'destination:', destination )
         if forced or self.ui.settingsAutosave.isChecked():
             config = ConfigParser()
-            config['autoclicker'] = {
+            config['autoclicker_M'] = {
                 'hours': self.ui.AC_Hours.value(),
                 'minutes': self.ui.AC_Minutes.value(),
                 'seconds': self.ui.AC_Seconds.value(),
                 'miliseconds': self.ui.AC_Miliseconds.value(),
                 'whichButton': self.ui.AC_WhichButton.currentIndex(),
                 'hotkey': self.ui.AC_Hotkey.keySequence().toString(),
-                'clickUntilStopped' : self.ui.AC_ClickUntilStopped.isChecked(),
+                'clickUntilStopped': self.ui.AC_ClickUntilStopped.isChecked(),
                 'clickNTimes': self.ui.AC_ClickNTimes.isChecked(),
                 'clickNTimesN': self.ui.AC_ClickNTimesN.value()
             }
+            config['autoclicker_K'] = {
+                'hours': self.ui.AC_KeyboardHours.value(),
+                'minutes': self.ui.AC_KeyboardMinutes.value(),
+                'seconds': self.ui.AC_KeyboardSeconds.value(),
+                'miliseconds': self.ui.AC_KeyboardMiliseconds.value(),
+                'keySequence': self.ui.AC_KeyboardKeySequence.keySequence().toString(),
+                'hotkey': self.ui.AC_KeyboardHotkey.keySequence().toString(),
+                'clickUntilStopped': self.ui.AC_KeyboardClickUntilStopped.isChecked(),
+                'clickNTimes': self.ui.AC_KeyboardClickNTimes.isChecked(),
+                'hold': self.ui.AC_KeyboardHold.isChecked(),
+                'clickNTimesN': self.ui.AC_KeyboardClickNTimesN.value()
+            }
+
             config['general'] = {
-                'abortHotkey': self.ui.abortHotkey.keySequence().toString()
+                'abortHotkey': self.ui.abortHotkey.keySequence().toString(),
+                'execution_time': self.ui.execution_time.value()
             }
             config['recording'] = {
                 'recordingHotkey': self.recordDialog.recordingHotkey.keySequence().toString(),
@@ -57,20 +71,34 @@ class SettingsMethods:
         parser = ConfigParser()
 
         if parser.read(destination):
-            # autoclicker
-            self.ui.AC_Hours.setValue(parser.getint('autoclicker', 'hours'))
-            self.ui.AC_Minutes.setValue(parser.getint('autoclicker', 'minutes'))
-            self.ui.AC_Seconds.setValue(parser.getint('autoclicker', 'seconds'))
-            self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker', 'miliseconds'))
-            self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker', 'whichButton'))
-            self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker', 'hotkey'))
-            self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker', 'clickUntilStopped'))
-            self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker', 'clickNTimes'))
-            self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker', 'clickNTimesN'))
+            # autoclicker mouse
+            self.ui.AC_Hours.setValue(parser.getint('autoclicker_M', 'hours'))
+            self.ui.AC_Minutes.setValue(parser.getint('autoclicker_M', 'minutes'))
+            self.ui.AC_Seconds.setValue(parser.getint('autoclicker_M', 'seconds'))
+            self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker_M', 'miliseconds'))
+            self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker_M', 'whichButton'))
+            self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker_M', 'hotkey'))
+            self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker_M', 'clickUntilStopped'))
+            self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker_M', 'clickNTimes'))
+            self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker_M', 'clickNTimesN'))
+
+            # autoclicker keyboard
+            self.ui.AC_KeyboardHours.setValue(parser.getint('autoclicker_K', 'hours'))
+            self.ui.AC_KeyboardMinutes.setValue(parser.getint('autoclicker_K', 'minutes'))
+            self.ui.AC_KeyboardSeconds.setValue(parser.getint('autoclicker_K', 'seconds'))
+            self.ui.AC_KeyboardMiliseconds.setValue(parser.getint('autoclicker_K', 'miliseconds'))
+            self.ui.AC_KeyboardKeySequence.setKeySequence(QKeySequence().fromString(parser.get('autoclicker_K', 'keySequence')))
+            self.ui.AC_KeyboardHotkey.setKeySequence(QKeySequence().fromString(parser.get('autoclicker_K', 'hotkey')))
+            self.AC_KeyboardHotkeyChange()
+            self.ui.AC_KeyboardClickUntilStopped.setChecked(parser.getboolean('autoclicker_K', 'clickUntilStopped'))
+            self.ui.AC_KeyboardClickNTimes.setChecked(parser.getboolean('autoclicker_K', 'clickNTimes'))
+            self.ui.AC_KeyboardHold.setChecked(parser.getboolean('autoclicker_K', 'hold'))
+            self.ui.AC_KeyboardClickNTimesN.setValue(parser.getint('autoclicker_K', 'clickNTimesN'))
 
             # general
-            self.ui.abortHotkey.setKeySequence( QKeySequence().fromString( parser.get( 'general', 'abortHotkey' )))
+            self.ui.abortHotkey.setKeySequence( QKeySequence().fromString( parser.get('general', 'abortHotkey')))
             self.updateAbortionHotkey()
+            self.ui.execution_time.setValue(parser.getfloat( 'general', 'execution_time' ))
             print( 'loadAllSettings' )
 
             # Recording
@@ -79,19 +107,33 @@ class SettingsMethods:
 
         elif parser.read( 'defaultSettings.dat' ):
             print( 'settings.dat not found' )
-            self.ui.AC_Hours.setValue(parser.getint('autoclicker', 'hours'))
-            self.ui.AC_Minutes.setValue(parser.getint('autoclicker', 'minutes'))
-            self.ui.AC_Seconds.setValue(parser.getint('autoclicker', 'seconds'))
-            self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker', 'miliseconds'))
-            self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker', 'whichButton'))
-            self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker', 'hotkey'))
-            self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker', 'clickUntilStopped'))
-            self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker', 'clickNTimes'))
-            self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker', 'clickNTimesN'))
+            self.ui.AC_Hours.setValue(parser.getint('autoclicker_M', 'hours'))
+            self.ui.AC_Minutes.setValue(parser.getint('autoclicker_M', 'minutes'))
+            self.ui.AC_Seconds.setValue(parser.getint('autoclicker_M', 'seconds'))
+            self.ui.AC_Miliseconds.setValue(parser.getint('autoclicker_M', 'miliseconds'))
+            self.ui.AC_WhichButton.setCurrentIndex(parser.getint('autoclicker_M', 'whichButton'))
+            self.ui.AC_Hotkey.setKeySequence(parser.get('autoclicker_M', 'hotkey'))
+            self.ui.AC_ClickUntilStopped.setChecked(parser.getboolean('autoclicker_M', 'clickUntilStopped'))
+            self.ui.AC_ClickNTimes.setChecked(parser.getboolean('autoclicker_M', 'clickNTimes'))
+            self.ui.AC_ClickNTimesN.setValue(parser.getint('autoclicker_M', 'clickNTimesN'))
+
+            # autoclicker keyboard
+            self.ui.AC_KeyboardHours.setValue(parser.getint('autoclicker_K', 'hours'))
+            self.ui.AC_KeyboardMinutes.setValue(parser.getint('autoclicker_K', 'minutes'))
+            self.ui.AC_KeyboardSeconds.setValue(parser.getint('autoclicker_K', 'seconds'))
+            self.ui.AC_KeyboardMiliseconds.setValue(parser.getint('autoclicker_K', 'miliseconds'))
+            self.ui.AC_KeyboardKeySequence.setKeySequence(QKeySequence().fromString(parser.get('autoclicker_K', 'keySequence')))
+            self.ui.AC_KeyboardHotkey.setKeySequence(QKeySequence().fromString(parser.get('autoclicker_K', 'hotkey')))
+            self.AC_KeyboardHotkeyChange()
+            self.ui.AC_KeyboardClickUntilStopped.setChecked(parser.getboolean('autoclicker_K', 'clickUntilStopped'))
+            self.ui.AC_KeyboardClickNTimes.setChecked(parser.getboolean('autoclicker_K', 'clickNTimes'))
+            self.ui.AC_KeyboardHold.setChecked(parser.getboolean('autoclicker_K', 'hold'))
+            self.ui.AC_KeyboardClickNTimesN.setValue(parser.getint('autoclicker_K', 'clickNTimesN'))
 
             # general
             self.ui.abortHotkey.setKeySequence(QKeySequence().fromString(parser.get('general', 'abortHotkey')))
             self.updateAbortionHotkey()
+            self.ui.execution_time.setValue(parser.getfloat('general', 'execution_time'))
 
             # Recording
             self.recordDialog.recordingHotkey.setKeySequence( QKeySequence().fromString(parser.get('recording', 'recordingHotkey')))
@@ -106,19 +148,34 @@ class SettingsMethods:
             print( 'settings.dat and defaultSettings.dat not found' )
             # create defaultSettings.dat
             config = ConfigParser()
-            config['autoclicker'] = {
+            config['autoclicker_M'] = {
                 'hours': 0,
                 'minutes': 0,
                 'seconds': 0,
-                'miliseconds': 100,
+                'miliseconds': 10,
                 'whichButton': 0,
                 'hotkey': 'Ctrl+Q',
                 'clickUntilStopped': True,
                 'clickNTimes': False,
                 'clickNTimesN': 1
             }
+
+            config['autoclicker_K'] = {
+                'hours': 0,
+                'minutes': 0,
+                'seconds': 0,
+                'miliseconds': 10,
+                'keySequence': 'W',
+                'hotkey': 'Ctrl+K',
+                'clickNTimes': False,
+                'clickUntilStopped': True,
+                'hold': False,
+                'clickNTimesN': 1
+            }
+
             config['general'] = {
-                'abortHotkey': 'Ctrl+Alt+B'
+                'abortHotkey': 'Ctrl+Alt+B',
+                'execution_time': 5
             }
             config['recording'] = {
                 'recordingHotkey': 'Ctrl+Alt+R',
