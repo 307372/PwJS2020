@@ -253,17 +253,6 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             self.ui.creatorEditorActions.itemSelectionChanged.connect( self.actionsWhatIsSelected )
             self.ui.creatorEditorName.textChanged.connect( lambda: self.ui.creatorEditorSave.setDisabled( self.checkIfSavingIsPossible() ) )
 
-            # Test functions
-
-            self.ui.testButton_3.clicked.connect(self.checkIfProgramIsAlreadyRunning)
-            self.ui.macroSaveAllMacrosButton.clicked.connect(self.saveAllMacros)
-            self.ui.macroLoadAllMacrosButton.clicked.connect(self.loadAllMacros)
-            self.ui.macroClearMacroDataButton.clicked.connect(self.clearMacroData)
-
-            self.ui.WhatIsThisButton.clicked.connect(self.inspectThis)
-            self.ui.macroWhatIsThisButton.clicked.connect(self.inspectMacroItem)
-            self.ui.InspectRecordingButton.clicked.connect( self.inspectRecording )
-
             # autosaves
             self.ui.abortHotkey.editingFinished.connect(self.autosave)
             self.recordDialog.previewHotkey.editingFinished.connect(self.autosave)
@@ -302,9 +291,12 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             exit()
 
     def releaseAllMouseButtons(self):
-        mouse.release( 'left' )
-        mouse.release( 'right' )
-        mouse.release( 'middle' )
+        if mouse.is_pressed( 'left' ):
+            mouse.release( 'left' )
+        if mouse.is_pressed( 'right' ):
+            mouse.release( 'right' )
+        if mouse.is_pressed( 'middle' ):
+            mouse.release( 'middle' )
 
     def checkIfSavingIsPossible(self):
         if self.macroElements != [] and self.ui.creatorEditorName.text() != '':
@@ -373,13 +365,19 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
         if hotkey != '':
             print("updateAbortionHotkey", hotkey)
             if self.abortionHotkey != '':
-                keyboard.remove_hotkey(self.abortionHotkey)
+                try:
+                    keyboard.remove_hotkey(self.abortAllMacros)
+                except KeyError:
+                    pass
             keyboard.add_hotkey( hotkey, self.abortAllMacros )
             self.abortionHotkey = hotkey
         else:
             print("updateAbortionHotkey ''")
             if self.abortionHotkey != '':
-                keyboard.remove_hotkey(self.abortionHotkey)
+                try:
+                    keyboard.remove_hotkey(self.abortAllMacros)
+                except KeyError:
+                    pass
             self.abortionHotkey = hotkey
 
     def creatorRecordNewRecording(self):
@@ -509,6 +507,11 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                     is_found = True
                     exit_code = self.macroOverwriteConfirmation()
                     if exit_code == 1024:  # Nadpisywać
+                        try:
+                            keyboard.remove_hotkey( self.macroTreeviewItems[i].macroPrep )
+                            print( "odbindowany" )
+                        except KeyError:
+                            print( 'Nie byl zbindowany i tak' )
                         row = self.macroTreeviewItems[i].row()
                         self.macroTreeModel.setItem(row, 0, item)
                         self.macroTreeModel.setItem(row, 1, item_duration)
@@ -660,7 +663,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             if bool(item.checkState()):  # just got set to active
                 if item.hotkey != '':
                     try:
-                        keyboard.remove_hotkey( item.hotkey )
+                        keyboard.remove_hotkey( item.macroPrep )
                     except KeyError:
                         print( 'Hotkey was inactive anyway' )
                     keyboard.add_hotkey( item.hotkey, item.macroPrep )
@@ -670,7 +673,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
             else:  # just set to inactive
                 if item.hotkey != '':
                     try:
-                        keyboard.remove_hotkey( item.hotkey )
+                        keyboard.remove_hotkey( item.macroPrep )
                         print('Hotkey now inactive')
                     except KeyError:
                         print('Hotkey was inactive anyway')
@@ -725,7 +728,7 @@ class MainWindow(QMainWindow, _autoclicker.AutoclickerMethods, _record.RecordMet
                 item = self.macroTreeviewItems[row_number]
                 if item.hotkey != '':
                     try:
-                        keyboard.remove_hotkey(item.hotkey)
+                        keyboard.remove_hotkey(item.macroPrep)
                     except KeyError:
                         pass
                 os.remove('macros/' + item.text() + '.pickle')

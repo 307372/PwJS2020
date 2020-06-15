@@ -31,6 +31,10 @@
   <property name="windowTitle">
    <string>Edytor akcji</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>ARZicon.ico</normaloff>ARZicon.ico</iconset>
+  </property>
   <widget class="QStackedWidget" name="pages">
    <property name="geometry">
     <rect>

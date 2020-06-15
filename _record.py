@@ -89,13 +89,19 @@ class RecordMethods:
         if hotkey != '':
             print( "creatorRecordHotkeyChange", hotkey )
             if self.creatorRecordHotkey != '':
-                keyboard.remove_hotkey( self.creatorRecordHotkey )
-            keyboard.add_hotkey(hotkey, self.creatorRecordToggle)
+                try:
+                    keyboard.remove_hotkey( self.creatorRecordToggle )
+                except KeyError:
+                    pass
+            keyboard.add_hotkey(hotkey, self.creatorRecordToggle )
             self.creatorRecordHotkey = hotkey
         else:
             print("cretorRecordHotkeyChange ''")
             if self.creatorRecordHotkey != '':
-                keyboard.remove_hotkey( self.creatorRecordHotkey )
+                try:
+                    keyboard.remove_hotkey( self.creatorRecordToggle )
+                except KeyError:
+                    pass
             self.creatorRecordHotkey = hotkey
 
     def creatorPreviewHotkeyChange(self):
@@ -103,13 +109,19 @@ class RecordMethods:
         if hotkey != '':
             print("creatorPreviewHotkeyChange", hotkey)
             if self.creatorPreviewHotkey != '':
-                keyboard.remove_hotkey(self.creatorPreviewHotkey)
-            keyboard.add_hotkey(hotkey, self.creatorRecordPreviewToggle)
+                try:
+                    keyboard.remove_hotkey( self.creatorRecordPreviewToggle )
+                except KeyError:
+                    pass
+            keyboard.add_hotkey(hotkey, self.creatorRecordPreviewToggle )
             self.creatorPreviewHotkey = hotkey
         else:
             print("cretorRecordHotkeyChange ''")
             if self.creatorPreviewHotkey != '':
-                keyboard.remove_hotkey(self.creatorPreviewHotkey)
+                try:
+                    keyboard.remove_hotkey( self.creatorRecordPreviewToggle )
+                except KeyError:
+                    pass
             self.creatorPreviewHotkey = hotkey
 
     def playRecording(self, recording, speed_factor=1.0, include_clicks=True, include_moves=True, include_wheel=True, include_keyboard=True):
@@ -206,6 +218,8 @@ class RecordMethods:
             # self.creatorRecordFinalEdit()
             thread = threading.Thread(target=lambda: self.creatorRecordPreviewStart(speed_factor=self.recordDialog.replaySpeed.value(), include_clicks=self.recordDialog.includeClicks.isChecked(), include_moves=self.recordDialog.includeMoves.isChecked(), include_wheel=self.recordDialog.includeWheel.isChecked(), include_keyboard=self.recordDialog.includeKeyboard.isChecked() ))
             thread.start()
+            thread.join()
+            self.creatorRecordPreviewStop()
         else:
             print( 'self.recorded is empty!' )
             print( self.recorded )
@@ -320,6 +334,10 @@ class RecordMethods:
     def creatorRecordTimeFinalUpdate(self):
         if self.recordedObject.events_final != []:
             print('creatorRecordTimeFinalUpdate')
+            print( self.recordedObject.events_final )
             self.recordDialog.timeFinal.setText( str( "%.2f" % self.recordedObject.events_final[-1].time ))   # ( ( self.recordedCut[-1].time - self.recordedCut[0].time ) * self.recordDialog.replaySpeed.value() )))
+
         else:
-            self.recordDialog.timeFinal.setText('0,00')
+            print('creatorRecordTimeFinalUpdate no events')
+            self.recordDialog.timeFinal.setText('0.00')
+        print('sukces')

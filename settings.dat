@@ -2,7 +2,7 @@
 hours = 0
 minutes = 0
 seconds = 0
-miliseconds = 10
+miliseconds = 20
 whichbutton = 0
 hotkey = Ctrl+Q
 clickuntilstopped = True
@@ -16,16 +16,16 @@ seconds = 0
 miliseconds = 10
 keysequence = W
 hotkey = Ctrl+K
-clickntimes = False
 clickuntilstopped = True
+clickntimes = False
 hold = False
 clickntimesn = 1
 
 [general]
 aborthotkey = Ctrl+Alt+B
-execution_time = 5
+execution_time = 5.0
 
 [recording]
-recordinghotkey = Ctrl+Alt+R
+recordinghotkey = Ctrl+R
 previewhotkey = Ctrl+Alt+P
 

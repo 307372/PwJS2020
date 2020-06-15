@@ -238,7 +238,6 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                 self.setCheckState( Qt.Checked )
             else:
                 self.setCheckState( Qt.Unchecked )
-        # self.active = self.checkState()
         self.macro_editor_items_list = macro_editor_items_list
         self.itemDuration = item_duration
         self.itemHotkey = item_hotkey
@@ -272,13 +271,19 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
                 if key_sequence != '':
                     print( "MTI_KeySequence:", self.text(), key_sequence )
                     if self.hotkey != '':
-                        keyboard.remove_hotkey(self.macroPrep)
+                        try:
+                            keyboard.remove_hotkey(self.macroPrep)
+                        except KeyError:
+                            pass
                     keyboard.add_hotkey(key_sequence, self.macroPrep)
                     self.hotkey = key_sequence
                 else:
                     print("MTI_HotkeyChange", self.text(), " ' ''", key_sequence)
                     if self.hotkey != '':
-                        keyboard.remove_hotkey(self.hotkey)
+                        try:
+                            keyboard.remove_hotkey(self.macroPrep)
+                        except KeyError:
+                            pass
                     self.hotkey = key_sequence
             else:
                 if key_sequence != '':
@@ -311,9 +316,12 @@ class MacroTreeviewItem(QStandardItem):  # MTvI
     def macroStop(self):
         print( 'macroStop' )
         self.isMacroRunning = False
-        mouse.release('left')
-        mouse.release('right')
-        mouse.release('middle')
+        if mouse.is_pressed('left'):
+            mouse.release('left')
+        if mouse.is_pressed('right'):
+            mouse.release('right')
+        if mouse.is_pressed('middle'):
+            mouse.release('middle')
         keyboard.stash_state()
         self.macroAbortEvent.set()
 

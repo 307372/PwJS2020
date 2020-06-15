@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'recordinggpsZVu.ui'
+## Form generated from reading UI file 'recordingvqcONg.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.2
 ##
@@ -28,6 +28,9 @@ class Ui_Dialog(object):
         Dialog.setSizePolicy(sizePolicy)
         Dialog.setMinimumSize(QSize(374, 325))
         Dialog.setMaximumSize(QSize(374, 325))
+        icon = QIcon()
+        icon.addFile(u"ARZicon.ico", QSize(), QIcon.Normal, QIcon.Off)
+        Dialog.setWindowIcon(icon)
         self.pages = QStackedWidget(Dialog)
         self.pages.setObjectName(u"pages")
         self.pages.setGeometry(QRect(10, 0, 361, 281))

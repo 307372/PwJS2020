@@ -49,13 +49,19 @@ class AutoclickerMethods:
         if hotkey != '':
             print( "autoclickerHotkeyChange", hotkey )
             if self.AC_Hotkey != '':
-                keyboard.remove_hotkey(self.AC_Hotkey)
+                try:
+                    keyboard.remove_hotkey(self.AC_Toggle)
+                except KeyError:
+                    pass
             keyboard.add_hotkey(hotkey, self.AC_Toggle)
             self.AC_Hotkey = hotkey
         else:
             print("autoclickerHotkeyChange ''")
             if self.AC_Hotkey != '':
-                keyboard.remove_hotkey(self.AC_Hotkey)
+                try:
+                    keyboard.remove_hotkey(self.AC_Toggle)
+                except KeyError:
+                    pass
             self.AC_Hotkey = hotkey
 
     def AC_MouseButtonUpdate(self):  # biblioteka mouse wymaga poniższych nazw
@@ -141,12 +147,18 @@ class AutoclickerMethods:
         if hotkey != '':
             print( "AC_KeyboardHotkeyChange", hotkey )
             if self.AC_KeyboardHotkey != '':
-                keyboard.remove_hotkey(self.AC_KeyboardHotkey)
+                try:
+                    keyboard.remove_hotkey(self.AC_KeyboardToggle)
+                except KeyError:
+                    pass
             keyboard.add_hotkey(hotkey, self.AC_KeyboardToggle)
             self.AC_KeyboardHotkey = hotkey
         else:
             print("AC_KeyboardHotkeyChange ''")
             if self.AC_KeyboardHotkey != '':
-                keyboard.remove_hotkey(self.AC_KeyboardHotkey)
+                try:
+                    keyboard.remove_hotkey(self.AC_KeyboardToggle)
+                except KeyError:
+                    pass
             self.AC_KeyboardHotkey = hotkey
 
